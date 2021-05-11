@@ -1,0 +1,40 @@
+{
+    "env": {
+      "browser": true,
+      "node": true,
+      "es6": true,
+      "jest": true
+    },
+    "globals": {
+      "angular": true,
+      "$": true,
+      "jsPDF": true
+    },
+    "rules": {
+      "default-case": "error",
+      "eqeqeq": "error",
+      "no-labels": "error",
+      "no-self-compare": "error",
+      "react/jsx-pascal-case": "error",
+      "semi": ["error", "never"],
+      "promise/no-promise-in-callback": "off",
+      "promise/no-callback-in-promise": "off",
+      "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }]
+    },
+    "parserOptions": {
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "sourceType": "module"
+    },
+    "parser": "babel-eslint",
+    "plugins": ["react", "jsx-a11y"],
+    "extends": [
+      "eslint:recommended",
+      "prettier",
+      "plugin:react/recommended",
+      "plugin:promise/recommended",
+      "plugin:jsx-a11y/recommended",
+      "plugin:react-hooks/recommended"
+    ]
+  }

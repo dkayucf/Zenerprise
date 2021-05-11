@@ -1,0 +1,44 @@
+{
+  "rules": {
+    "indent": "off",
+    "space-before-function-paren": [
+      2,
+      {
+        "anonymous": "always",
+        "named": "never"
+      }
+    ],
+    "no-use-before-define": [
+      2,
+      "nofunc"
+    ],
+    // TODO: turn on later
+    "comma-dangle": [
+      0
+    ],
+   "new-cap": 0,
+   "max-len": [2, 15800000],
+   "no-else-return": 0,
+   "no-param-reassign": 0,
+   "no-console": ["error", { "allow": ["warn", "error"] }],
+   "eqeqeq": "error",
+   "default-case": "error",
+   "no-self-compare": "error",
+   "semi": ["error", "never"],
+    "promise/no-promise-in-callback": "off",
+    "promise/no-callback-in-promise": "off",
+    "linebreak-style": "off",
+    "spaced-comment": "off",
+  },
+  "env": {
+    "node": true,
+    "mocha": true
+  },
+  "parser": "babel-eslint",
+  "extends": [
+    "eslint:recommended",
+    "prettier",
+    "plugin:promise/recommended",
+    "airbnb/base"
+  ]
+}

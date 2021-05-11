@@ -1,0 +1,100 @@
+import React, { useCallback } from 'react'
+import {
+  Avatar,
+  MenuItem,
+  Menu,
+  ListItemText,
+  ListItemIcon,
+  Box,
+  Divider,
+} from '@material-ui/core'
+import { withStyles, makeStyles } from '@material-ui/core/styles'
+import { useHeader } from '../../../../../contexts/provideHeader'
+import { useAuth } from '../../../../../contexts/provideAuth'
+import { useRouter } from '../../../../../hooks/useRouter'
+
+const StyledMenu = withStyles(({ spacing }) => ({
+  list: {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+  paper: {
+    border: '1px solid #d3d4d5',
+    borderRadius: 4,
+    width: '100%',
+    maxWidth: '275px',
+    marginTop: spacing(0.5),
+    boxShadow: '0 2px 4px rgb(0 0 0 / 8%), 0 4px 12px rgb(0 0 0 / 8%)',
+  },
+}))((props) => (
+  <Menu
+    elevation={0}
+    getContentAnchorEl={null}
+    anchorOrigin={{
+      vertical: 'bottom',
+      horizontal: 'right',
+    }}
+    transformOrigin={{
+      vertical: 'top',
+      horizontal: 'right',
+    }}
+    {...props}
+  />
+))
+
+const StyledMenuItem = withStyles((theme) => ({
+  root: {
+    padding: theme.spacing(2),
+  },
+}))(MenuItem)
+
+const useStyles = makeStyles((theme) => ({
+  avatar: {
+    width: '4rem',
+    height: '4rem',
+    fontSize: '24px',
+    fontWeight: 700,
+    color: theme.palette.primary.contrastText,
+    backgroundColor: theme.palette.secondary.main,
+  },
+}))
+
+const SecondaryMenu = () => {
+  const { push } = useRouter()
+  const { anchorEl, menuId, isMenuOpen, handleMenuClose } = useHeader()
+  const classes = useStyles()
+  const { logout, user } = useAuth()
+  const redirect = useCallback(() => push('/auth/dashboard'), [push])
+  const handleLogout = useCallback(() => logout(redirect), [logout, redirect])
+  const handleProfile = useCallback(() => push('/auth/profile'), [push])
+
+  return (
+    <StyledMenu
+      disableAutoFocusItem
+      anchorEl={anchorEl}
+      id={menuId}
+      keepMounted
+      open={isMenuOpen}
+      onClose={handleMenuClose}
+      MenuListProps={{ onMouseLeave: handleMenuClose }}
+    >
+      <StyledMenuItem onClick={handleProfile}>
+        <ListItemIcon>
+          <Avatar className={classes.avatar}>{user.initials}</Avatar>
+        </ListItemIcon>
+        <Box ml={1}>
+          <ListItemText
+            primary={user.name.fullName || 'Hello'}
+            primaryTypographyProps={{ style: { fontWeight: 700 } }}
+          />
+          <ListItemText primary={user.email} />
+        </Box>
+      </StyledMenuItem>
+      <Divider />
+      <StyledMenuItem>My account</StyledMenuItem>
+      <StyledMenuItem onClick={handleLogout}>Logout</StyledMenuItem>
+    </StyledMenu>
+  )
+}
+
+export default SecondaryMenu
