@@ -17,13 +17,15 @@ export default {
         label: Joi.string().required()
       },
       addressLineOne: Joi.string().required(),
-      addressLineTwo: Joi.string().empty('').default(''),
+      addressLineTwo: Joi.string()
+        .empty('')
+        .default(''),
       city: Joi.string().required(),
       state: {
         value: Joi.string().required(),
         label: Joi.string().required()
       },
-      postalCode: Joi.string().required(),
+      postalCode: Joi.string().required()
     }
   },
 
@@ -36,16 +38,15 @@ export default {
   updatePrimaryPhone: {
     body: {
       type: Joi.string().required(),
-      primaryPhone: Joi.boolean().isRequired(),
+      primaryPhone: Joi.boolean().required(),
       phone: Joi.string().required(),
       phoneFormatted: Joi.string().required(),
       phoneData: {
         countryCode: Joi.string().required(),
         dialCode: Joi.string().required(),
         format: Joi.string().required(),
-        name: Joi.string().required(),
-      },
+        name: Joi.string().required()
+      }
     }
   }
-
 }
