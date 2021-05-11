@@ -80,7 +80,6 @@ const PersonalInfoProvider = ({ children }) => {
 
   const updatePrimaryPhone = useCallback(
     async (values, resetForm) => {
-      console.log(values)
       const response = await makeRequest({
         url: '/users/primary-phone',
         method: 'PUT',
