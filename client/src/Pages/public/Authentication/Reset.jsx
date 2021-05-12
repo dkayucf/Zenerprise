@@ -1,8 +1,8 @@
 import React from 'react'
-import ResetPass from '../../../common/authentication/ResetPassword'
+import ResetEmailPassword from '../../../common/authentication/ResetEmailPassword'
 
 const ResetPassword = () => {
-  return <ResetPass />
+  return <ResetEmailPassword />
 }
 
 export default ResetPassword

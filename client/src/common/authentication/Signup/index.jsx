@@ -76,8 +76,13 @@ export default function SignUp() {
         ])}
         validate={fullValidatorForSchema(validationSchema)}
       >
-        {({ values, handleSubmit }) => (
-          <SignUpForm values={values} handleSubmit={handleSubmit} />
+        {({ values, handleSubmit, isValid, dirty }) => (
+          <SignUpForm
+            values={values}
+            handleSubmit={handleSubmit}
+            isValid={isValid}
+            dirty={dirty}
+          />
         )}
       </Formik>
     </AuthCard>

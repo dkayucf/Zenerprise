@@ -19,11 +19,17 @@ const useStyles = makeStyles((theme) => ({
   }),
 }))
 
-export default function Password({ confirmPassword, isLogin, autoComplete }) {
+export default function Password({ isLogin, autoComplete, name, label }) {
   const [showPassword, setShowPassword] = useState(false)
   const [focused, setFocus] = useState(false)
   const classes = useStyles({ focused, isLogin })
-  const { values, handleChange, touched, errors } = useFormikContext()
+  const {
+    values,
+    handleChange,
+    touched,
+    errors,
+    setFieldTouched,
+  } = useFormikContext()
 
   const handleShowPassword = useCallback(
     () => setShowPassword((prev) => !prev),
@@ -31,11 +37,13 @@ export default function Password({ confirmPassword, isLogin, autoComplete }) {
   )
 
   const toggleFocus = useCallback(() => setFocus((prev) => !prev), [])
+  const handleBlur = useCallback(() => {
+    setFieldTouched(name, true)
+    setFocus((prev) => !prev)
+  }, [name, setFieldTouched])
 
-  const inputName = confirmPassword ? 'confirmPassword' : 'password'
-  const inputLabel = confirmPassword ? 'Confirm Password' : 'Password'
-  const touchedInput = touched[inputName]
-  const passwordErrors = errors[inputName]
+  const touchedInput = touched[name]
+  const passwordErrors = errors[name]
   const hasErrors = passwordErrors && passwordErrors.length > 0
 
   return (
@@ -45,20 +53,20 @@ export default function Password({ confirmPassword, isLogin, autoComplete }) {
       fullWidth
       margin="normal"
     >
-      <InputLabel className={classes.label} htmlFor={inputName} required>
-        {inputLabel}
+      <InputLabel className={classes.label} htmlFor={name} required>
+        {label}
       </InputLabel>
       <OutlinedInput
         autoComplete={autoComplete}
-        label={inputLabel}
+        label={label}
         required
-        id={inputName}
+        id={name}
         type={showPassword ? 'text' : 'password'}
-        value={values[inputName]}
-        name={inputName}
-        placeholder={isLogin && inputLabel}
+        value={values[name]}
+        name={name}
+        placeholder={isLogin && label}
         onFocus={toggleFocus}
-        onBlur={toggleFocus}
+        onBlur={handleBlur}
         onChange={handleChange}
         endAdornment={
           <InputAdornment position="end">
@@ -73,10 +81,10 @@ export default function Password({ confirmPassword, isLogin, autoComplete }) {
         }
       />
       {!isLogin &&
-        focused &&
+        (focused || touchedInput) &&
         hasErrors &&
         passwordErrors.map((error, i) => (
-          <FormHelperText key={i} id={`${inputName}-error-text-${i}`}>
+          <FormHelperText key={i} id={`${name}-error-text-${i}`}>
             {error}
           </FormHelperText>
         ))}
@@ -85,11 +93,13 @@ export default function Password({ confirmPassword, isLogin, autoComplete }) {
 }
 
 Password.propTypes = {
+  name: PropTypes.string,
+  label: PropTypes.string,
   isLogin: PropTypes.bool,
-  confirmPassword: PropTypes.bool,
   autoComplete: PropTypes.string,
 }
 
 Password.defaultProps = {
   autoComplete: 'none',
+  isLogin: false,
 }

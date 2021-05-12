@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-export default function SignUpForm({ handleSubmit, values }) {
+export default function SignUpForm({ handleSubmit, values, isValid, dirty }) {
   const classes = useStyles()
   const { signUpStatus, resetLoginRequest, resetSignupRequest } = useAuth()
   const { isLoading } = signUpStatus
@@ -62,14 +62,23 @@ export default function SignUpForm({ handleSubmit, values }) {
           <PhoneNumber id="phone" name="phone" required />
         </Grid>
         <Grid item xs={12}>
-          <Password autoComplete="new-password" />
+          <Password
+            autoComplete="new-password"
+            name="password"
+            label="Password"
+          />
         </Grid>
         <Grid item xs={12}>
-          <Password confirmPassword />
+          <Password
+            autoComplete="new-password"
+            name="confirmPassword"
+            label="Confirm Password"
+          />
         </Grid>
         <Grid item xs={12}>
           <Box mt={3} mb={1}>
             <LoadingButton
+              disabled={!isValid || !dirty}
               isPending={isLoading}
               type="submit"
               fullWidth
@@ -91,6 +100,8 @@ export default function SignUpForm({ handleSubmit, values }) {
 }
 
 SignUpForm.propTypes = {
+  dirty: PropTypes.bool,
+  isValid: PropTypes.bool,
   handleSubmit: PropTypes.func,
   values: PropTypes.object,
 }

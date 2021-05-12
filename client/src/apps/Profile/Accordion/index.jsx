@@ -61,6 +61,28 @@ const getValidationSchema = (label) => {
           .string('Enter your last name')
           .required('Last name is required'),
       })
+    case 'Password':
+      return yup.object({
+        password: yup
+          .string('Enter your password')
+          .matches(/^.{8,}$/, '8 characters or longer')
+          .matches(
+            /^((?=.*?[a-zA-Z])|(?=.*?[#?!@$%^&*-]))/,
+            'At least 1 letter or symbol (like !@#$%^).'
+          )
+          .matches(
+            /^((?=.*?[0-9])|(?=.*?[#?!@$%^&*-]))/,
+            'At least 1 number or symbol (like !@#$%^).'
+          )
+          .matches(
+            /^((?=.*?[0-9])|(?=.*?[a-zA-Z]))/,
+            'At least 1 letter or number.'
+          )
+          .required('Password is required'),
+        confirmPassword: yup
+          .string()
+          .oneOf([yup.ref('password'), null], 'Passwords must match'),
+      })
     case 'Phone Number':
       return yup.object({
         phone: yup

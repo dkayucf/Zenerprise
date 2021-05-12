@@ -30,7 +30,12 @@ export default function SignInForm({ handleSubmit, values }) {
   return (
     <form className={classes.form} onSubmit={handleSubmit}>
       <UserInput />
-      <Password isLogin autoComplete="current-password" />
+      <Password
+        isLogin
+        autoComplete="current-password"
+        name="password"
+        label="Password"
+      />
       <LinkRouter to="/forgot-password" variant="body2">
         Forgot password?
       </LinkRouter>

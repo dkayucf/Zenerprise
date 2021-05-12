@@ -1,12 +1,11 @@
 import React, { useCallback } from 'react'
-import { Formik } from 'formik'
 import * as yup from 'yup'
 import { Button, Grid } from '@material-ui/core'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import AuthCard from '../AuthCard'
 import Password from '../../FormComponents/Password'
-import { fullValidatorForSchema } from '../../FormComponents/helpers'
+import GenericForm from '../../FormComponents/GenericForm'
 
 // import { useAuth } from '../../../contexts/provideAuth'
 // import { useRouter } from '../../../hooks/useRouter'
@@ -40,7 +39,12 @@ const validationSchema = yup.object({
     .oneOf([yup.ref('password'), null], 'Passwords must match'),
 })
 
-export default function ResetPassword() {
+const initialValues = {
+  password: '',
+  confirmPassword: '',
+}
+
+export default function ResetPasswordEmail() {
   // const { push } = useRouter()
   const classes = useStyles()
   // const { sendPasswordResetEmail } = useAuth()
@@ -51,40 +55,39 @@ export default function ResetPassword() {
 
   return (
     <AuthCard logo={<LockOutlinedIcon />} cardHeading="Reset Password">
-      <Formik
-        initialValues={{
-          password: '',
-          confirmPassword: '',
-        }}
+      <GenericForm
+        initialValues={initialValues}
         onSubmit={useCallback((values) => console.log(values), [])}
-        validate={fullValidatorForSchema(validationSchema)}
+        validationSchema={validationSchema}
       >
-        {({ handleSubmit }) => {
-          return (
-            <form className={classes.form} onSubmit={handleSubmit}>
-              <Grid container>
-                <Grid item xs={12}>
-                  <Password />
-                </Grid>
-                <Grid item xs={12}>
-                  <Password confirmPassword />
-                </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    fullWidth
-                    variant="contained"
-                    color="primary"
-                    className={classes.submit}
-                  >
-                    Submit
-                  </Button>
-                </Grid>
-              </Grid>
-            </form>
-          )
-        }}
-      </Formik>
+        <Grid container>
+          <Grid item xs={12}>
+            <Password
+              autoComplete="new-password"
+              name="password"
+              label="Password"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Password
+              autoComplete="new-password"
+              name="confirmPassword"
+              label="Confirm Password"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              className={classes.submit}
+            >
+              Submit
+            </Button>
+          </Grid>
+        </Grid>
+      </GenericForm>
     </AuthCard>
   )
 }

@@ -1,15 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import httpStatus from 'http-status'
-import {
-  head,
-  toUpper,
-  pathOr,
-  dissoc,
-  prop,
-  path,
-  dissocPath,
-  props
-} from 'ramda'
+import { head, toUpper, pathOr, path, props } from 'ramda'
 import User from '../models/user'
 import APIError from '../helpers/APIError'
 import config from '../../config/env'
@@ -309,7 +300,6 @@ function updatePrimaryPhone(req, res, next) {
     { new: true }
   )
     .then(user => {
-      console.log(user)
       const returnObj = setReturnObject(user, req.session.userRoutes)
       return res.json(returnObj)
     })
