@@ -87,12 +87,12 @@ const PersonalInfoProvider = ({ children }) => {
         data: values,
       })
 
-      // const user = path([primaryPhoneKey, 'user'], response)
-      // if (user) {
-      //   resetForm()
-      //   setSessionCookie(response[primaryPhoneKey])
-      //   setUser(user)
-      // }
+      const user = path([primaryPhoneKey, 'user'], response)
+      if (user) {
+        resetForm()
+        setSessionCookie(response[primaryPhoneKey])
+        setUser(user)
+      }
     },
     [makeRequest, setSessionCookie, setUser]
   )

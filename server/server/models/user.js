@@ -9,47 +9,40 @@ const { Schema } = mongoose
 /**
  * Phone Number Schema
  */
- const PhoneNumberSchema = new Schema({
-  phone: {
-    type: String,
-    required: true,
-    index: true,
-    unique: true
+const PhoneNumberSchema = new Schema(
+  {
+    phone: {
+      type: String,
+      required: true,
+      index: true,
+      unique: true
+    },
+    phoneFormatted: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    type: {
+      type: String,
+      enum: ['mobile', 'home', 'work'],
+      default: 'mobile',
+      required: true
+    },
+    primaryPhone: {
+      type: Boolean,
+      default: true
+    },
+    phoneData: {
+      countryCode: { type: String, required: true },
+      dialCode: { type: String, required: true },
+      format: { type: String, required: true },
+      name: { type: String, required: true }
+    }
   },
-  phoneFormatted: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  type: {
-    type: String,
-    enum: [
-      'mobile',
-      'home',
-      'work'
-    ],
-    default: 'mobile',
-    required: true
-  },
-  primaryPhone: {
-    type: Boolean,
-    default: true
-  },
-  phoneData: {
-    countryCode: { type: String, required: true },
-    dialCode: { type: String, required: true },
-    format: { type: String, required: true },
-    name: { type: String, required: true },
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: null
+  {
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
   }
-})
+)
 
 const CountrySchema = new Schema({
   code: {
@@ -76,82 +69,80 @@ const StatesSchema = new Schema({
 /**
  * Address Number Schema
  */
- const AddressSchema = new Schema({
-  country: CountrySchema,
-  addressLineOne: {
-    type: String,
-    required: true
+const AddressSchema = new Schema(
+  {
+    country: CountrySchema,
+    addressLineOne: {
+      type: String,
+      required: true
+    },
+    addressLineTwo: {
+      type: String
+    },
+    city: {
+      type: String,
+      required: true
+    },
+    state: StatesSchema,
+    postalCode: {
+      type: String,
+      required: true
+    }
   },
-  addressLineTwo: {
-    type: String
-  },
-  city: {
-    type: String,
-    required: true
-  },
-  state: StatesSchema,
-  postalCode: {
-    type: String,
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: null
+  {
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
   }
-})
+)
 
 /**
  * User Schema
  */
-const UserSchema = new Schema({
-  firstName: {
-    type: String,
-    required: true
+const UserSchema = new Schema(
+  {
+    firstName: {
+      type: String,
+      required: true
+    },
+    lastName: {
+      type: String,
+      required: true
+    },
+    phoneNumbers: [PhoneNumberSchema],
+    addresses: [AddressSchema],
+    email: {
+      type: String,
+      required: true
+    },
+    password: {
+      type: String,
+      required: true,
+      select: false
+    },
+    role: {
+      type: String,
+      enum: [
+        'employee',
+        'assistantManager',
+        'manager',
+        'owner',
+        'president',
+        'vicePresident',
+        'ceo',
+        'cfo',
+        'humanResources'
+      ],
+      default: 'owner', //TODO: CHANGE TO EMPLOYEE
+      required: true
+    },
+    resetToken: {
+      type: String,
+      default: ''
+    }
   },
-  lastName: {
-    type: String,
-    required: true
-  },
-  phoneNumbers: [PhoneNumberSchema],
-  addresses: [AddressSchema],
-  email: {
-    type: String,
-    required: true
-  },
-  password: {
-    type: String,
-    required: true,
-    select: false
-  },
-  role: {
-    type: String,
-    enum: [
-      'employee',
-      'assistantManager',
-      'manager',
-      'owner',
-      'president',
-      'vicePresident',
-      'ceo',
-      'cfo',
-      'humanResources'
-    ],
-    default: 'owner', //TODO: CHANGE TO EMPLOYEE
-    required: true
-  },
-  resetToken: {
-    type: String,
-    default: ''
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
+  {
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
   }
-})
+)
 
 /**
  * Add your
@@ -207,7 +198,7 @@ UserSchema.methods.comparePassword = function comparePassword(pw, cb) {
  * @param pw - raw password from user that needs to be encrypted
  * @param cb - callback function
  */
- UserSchema.methods.encryptPassword = function encryptPassword(pw, cb) {
+UserSchema.methods.encryptPassword = function encryptPassword(pw, cb) {
   const user = this
 
   // eslint-disable-next-line
@@ -240,7 +231,7 @@ UserSchema.statics = {
   get(id) {
     return this.findById(id)
       .execAsync()
-      .then((user) => {
+      .then(user => {
         if (user) {
           return user
         }

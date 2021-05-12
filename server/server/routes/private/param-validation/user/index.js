@@ -1,5 +1,7 @@
 import Joi from 'joi'
 
+Joi.objectId = require('joi-objectid')(Joi)
+
 export default {
   // POST /apix/users/name
   updateName: {
@@ -37,6 +39,7 @@ export default {
 
   updatePrimaryPhone: {
     body: {
+      _id: Joi.objectId(),
       type: Joi.string().required(),
       primaryPhone: Joi.boolean().required(),
       phone: Joi.string().required(),
