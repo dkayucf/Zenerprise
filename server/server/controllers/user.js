@@ -36,6 +36,30 @@ const setReturnObject = (user, userRoutes) => {
   }
 }
 
+function validateUser(req, res, next) {
+  const email = pathOr('', ['body', 'email'], req)
+  const phoneNumber = pathOr('', ['body', 'phone'], req)
+
+  User.findOne({
+    $or: [{ email }, { 'phoneNumbers.phone': phoneNumber }]
+  })
+    .then(foundUser => {
+      if (foundUser) {
+        res.json({ isValidUser: false })
+      } else {
+        res.json({ isValidUser: true })
+      }
+      return foundUser
+    })
+    .catch(e => {
+      const err = new APIError(
+        `Internal Server Error ${e}`,
+        httpStatus.INTERNAL_SERVER_ERROR
+      )
+      next(err)
+    })
+}
+
 function register(req, res, next) {
   Promise.all([
     getConfigPromise('frontend-routes'),
@@ -77,7 +101,13 @@ function register(req, res, next) {
       res.json(returnObj)
       return savedUser
     })
-    .catch(e => next(e))
+    .catch(e => {
+      const err = new APIError(
+        `Internal Server Error ${e}`,
+        httpStatus.INTERNAL_SERVER_ERROR
+      )
+      next(err)
+    })
 }
 
 function login(req, res, next) {
@@ -314,5 +344,6 @@ export default {
   updateName,
   updateAddress,
   updateEmail,
-  updatePrimaryPhone
+  updatePrimaryPhone,
+  validateUser
 }

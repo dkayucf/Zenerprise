@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { Box, Grid } from '@material-ui/core'
+import { Box, Grid, InputAdornment, CircularProgress } from '@material-ui/core'
+import CheckIcon from '@material-ui/icons/Check'
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline'
 import { makeStyles } from '@material-ui/core/styles'
 import PhoneNumber from '../../FormComponents/PhoneNumber'
 import Password from '../../FormComponents/Password'
@@ -15,18 +17,64 @@ const useStyles = makeStyles((theme) => ({
     width: '100%', // Fix IE 11 issue.
     marginTop: theme.spacing(1),
   },
+  success: {
+    color: theme.palette.success.main,
+  },
 }))
+
+// eslint-disable-next-line react/prop-types
+const InputIcon = ({ isLoading, isSuccessful, isValid }) => {
+  const classes = useStyles()
+  if (isLoading) {
+    return <CircularProgress size={20} />
+  }
+  if (isSuccessful) {
+    if (isValid) {
+      return <CheckIcon className={classes.success} />
+    } else {
+      return <ErrorOutlineIcon color="error" />
+    }
+  }
+  return null
+}
 
 export default function SignUpForm({ handleSubmit, values, isValid, dirty }) {
   const classes = useStyles()
-  const { signUpStatus, resetLoginRequest, resetSignupRequest } = useAuth()
+  const {
+    signUpStatus,
+    resetLoginRequest,
+    resetSignupRequest,
+    resetEmailValidate,
+    resetPhoneValidate,
+    useResource,
+  } = useAuth()
   const { isLoading } = signUpStatus
   const { location } = useRouter()
+
+  useEffect(() => {
+    resetEmailValidate()
+  }, [values.email, resetEmailValidate])
+
+  useEffect(() => {
+    resetPhoneValidate()
+  }, [values.phone, resetPhoneValidate])
 
   useEffect(() => {
     resetLoginRequest()
     resetSignupRequest()
   }, [values, resetLoginRequest, resetSignupRequest, location])
+
+  const {
+    isLoading: emailValidationLoading,
+    isSuccessful,
+    response,
+  } = useResource('email')
+
+  const {
+    isLoading: phoneValidationLoading,
+    isSuccessful: phoneValidationSuccessful,
+    response: phoneValidationResponse,
+  } = useResource('phone')
 
   return (
     <form className={classes.form} onSubmit={handleSubmit}>
@@ -56,10 +104,30 @@ export default function SignUpForm({ handleSubmit, values, isValid, dirty }) {
             required
             autoComplete="email"
             type="email"
+            endAdornment={
+              <InputAdornment position="end">
+                <InputIcon
+                  isLoading={emailValidationLoading}
+                  isValid={response.isValidUser}
+                  isSuccessful={isSuccessful}
+                />
+              </InputAdornment>
+            }
           />
         </Grid>
         <Grid item xs={12}>
-          <PhoneNumber id="phone" name="phone" required />
+          <PhoneNumber id="phone" name="phone" required>
+            <InputAdornment
+              position="end"
+              style={{ position: 'absolute', right: '15px', bottom: '36px' }}
+            >
+              <InputIcon
+                isLoading={phoneValidationLoading}
+                isValid={phoneValidationResponse.isValidUser}
+                isSuccessful={phoneValidationSuccessful}
+              />
+            </InputAdornment>
+          </PhoneNumber>
         </Grid>
         <Grid item xs={12}>
           <Password

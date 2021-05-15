@@ -8,10 +8,10 @@ import { Box, FormHelperText } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles((theme) => ({
-  phoneInput: ({ error, touched }) => ({
+  phoneInput: ({ hasErrors, touched }) => ({
     '&&': {
       border:
-        touched && Boolean(error)
+        hasErrors && touched
           ? `1px solid ${theme.palette.error.main}`
           : '1px solid #CACACA',
     },
@@ -19,13 +19,23 @@ const useStyles = makeStyles((theme) => ({
       borderColor: theme.palette.primary.main,
       boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
     },
+    '&&.form-control:focus': {
+      borderColor:
+        hasErrors && touched
+          ? theme.palette.error.main
+          : theme.palette.primary.main,
+      boxShadow:
+        hasErrors && touched
+          ? `0 0 0 1px ${theme.palette.error.main}`
+          : `0 0 0 1px ${theme.palette.primary.main}`,
+    },
   }),
-  container: ({ error, touched, isFocused }) => ({
+  container: ({ hasErrors, touched, isFocused }) => ({
     '& .special-label': {
       fontSize: 12,
       left: 15,
       color:
-        touched && Boolean(error)
+        hasErrors && touched
           ? theme.palette.error.main
           : isFocused
           ? theme.palette.primary.main
@@ -34,17 +44,22 @@ const useStyles = makeStyles((theme) => ({
   }),
 }))
 
-const PhoneInputField = ({ ...props }) => {
+const PhoneInputField = ({ children, ...props }) => {
   const [isFocused, setIsFocused] = useState(false)
   const { required, autofocus, onValueChange } = props
   const [field, meta] = useField(props)
-  const { setFieldValue } = useFormikContext()
+  const { setFieldValue, setFieldTouched } = useFormikContext()
 
   const { name, value } = field
   const { error, touched } = meta
+  const hasErrors = error && error.length > 0
 
-  const classes = useStyles({ error, touched, isFocused })
+  const classes = useStyles({ error, hasErrors, touched, isFocused })
   const toggleFocus = useCallback(() => setIsFocused((prev) => !prev), [])
+  const handleBlur = useCallback(() => {
+    setIsFocused((prev) => !prev)
+    setFieldTouched(name, true)
+  }, [setFieldTouched, name])
 
   const onChange = useCallback(
     (value, phoneData, event, formattedValue) => {
@@ -61,32 +76,44 @@ const PhoneInputField = ({ ...props }) => {
 
   return (
     <Box>
-      <PhoneInput
-        inputProps={{
-          name: name,
-          type: 'tel',
-          autoFocus: autofocus,
-          autoComplete: 'none',
-        }}
-        disableCountryGuess={true}
-        disableAreaCodes
-        enableSearch
-        specialLabel={required ? 'Phone *' : 'Phone'}
-        placeholder="Enter phone number"
-        containerStyle={{ marginTop: 16, marginBottom: 8 }}
-        containerClass={classes.container}
-        inputClass={classes.phoneInput}
-        inputStyle={{ width: '100%' }}
-        name={name}
-        value={value}
-        onChange={onChange}
-        onFocus={toggleFocus}
-        onBlur={toggleFocus}
-        country="us"
-      />
-      <FormHelperText error={touched && Boolean(error)}>
-        {touched && error}
-      </FormHelperText>
+      <Box
+        display="inline-flex"
+        width="100%"
+        position="relative"
+        alignItems="center"
+      >
+        <PhoneInput
+          inputProps={{
+            name: name,
+            type: 'tel',
+            autoFocus: autofocus,
+            autoComplete: 'none',
+          }}
+          disableCountryGuess={true}
+          disableAreaCodes
+          enableSearch
+          specialLabel={required ? 'Phone *' : 'Phone'}
+          placeholder="Enter phone number"
+          containerStyle={{ marginTop: 16, marginBottom: 8 }}
+          containerClass={classes.container}
+          inputClass={classes.phoneInput}
+          inputStyle={{ width: '100%' }}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={toggleFocus}
+          onBlur={handleBlur}
+          country="us"
+        />
+        {children}
+      </Box>
+      {hasErrors &&
+        touched &&
+        error.map((err, i) => (
+          <FormHelperText error={touched && hasErrors} key={i}>
+            {err}
+          </FormHelperText>
+        ))}
     </Box>
   )
 }
@@ -95,6 +122,7 @@ PhoneInputField.propTypes = {
   autofocus: PropTypes.bool,
   required: PropTypes.bool,
   onValueChange: PropTypes.func,
+  children: PropTypes.node,
 }
 
 export default PhoneInputField

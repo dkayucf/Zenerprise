@@ -15,13 +15,17 @@ const authContext = createContext({
   signup: () => {},
   login: () => {},
   logout: () => {},
+  validateUser: () => {},
   resetLoginRequest: () => {},
   resetSignupRequest: () => {},
+  resetPhoneValidate: () => {},
+  resetEmailValidate: () => {},
   sendPasswordResetEmail: () => {},
   setUser: () => {},
   loginStatus: {},
   logoutStatus: {},
   signUpStatus: {},
+  useResource: {}
 })
 
 const ProvideAuth = ({ children }) => {
@@ -45,11 +49,25 @@ const useProvideAuth = () => {
     const [user, setUser] = useState(sessionCookie.user)
     const [isAuth, setIsAuth] = useState(sessionCookie.isAuth)
     const [routes, setRoutes] = useState(sessionCookie.routes)
-    const { makeRequest, resetRequest, useResource } = useApiRequest([loginKey, signupKey, logoutKey], isAuth)
+    const { makeRequest, resetRequest, useResource } = useApiRequest([loginKey, signupKey, logoutKey, 'email', 'phone'], isAuth)
 
     useEffect(() => {
       setSessionCookie(sessionCookie)
     }, [sessionCookie, setSessionCookie])
+
+    const validateUser = (type) => async (value) => {
+      if (value) {
+        const { isValidUser } = propOr({ isValidUser: false }, type, await makeRequest({
+          url: '/users/validate-user',
+          method: 'POST',
+          requestKey: type,
+          data: {
+            [type]: value
+          }
+        }))
+        return isValidUser
+      }
+    }
     
     const signup = async(values, cb) => {
       const { isAuth, user, routes } = propOr(defaultObj, signupKey, await makeRequest({
@@ -125,6 +143,8 @@ const useProvideAuth = () => {
 
       const resetLoginRequest = useCallback(() => resetRequest(loginKey), [resetRequest])
       const resetSignupRequest = useCallback(() => resetRequest(signupKey), [resetRequest])
+      const resetEmailValidate = useCallback(() => resetRequest('email'), [resetRequest])
+      const resetPhoneValidate = useCallback(() => resetRequest('phone'), [resetRequest])
     
       // Return the user object and auth methods
       return {
@@ -135,12 +155,16 @@ const useProvideAuth = () => {
         login,
         signup,
         logout,
+        validateUser,
         resetLoginRequest,
         resetSignupRequest,
+        resetEmailValidate,
+        resetPhoneValidate,
         sendPasswordResetEmail,
         loginStatus: useResource(loginKey),
         logoutStatus: useResource(logoutKey),
-        signUpStatus: useResource(signupKey)
+        signUpStatus: useResource(signupKey),
+        useResource
       }
 }
 

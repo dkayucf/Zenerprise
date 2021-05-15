@@ -14,14 +14,10 @@ export default function FormikInput({
   required,
   autoComplete,
   type,
+  ...rest
 }) {
-  const {
-    values,
-    handleChange,
-    touched,
-    errors,
-    setFieldTouched,
-  } = useFormikContext()
+  const { values, handleChange, touched, errors, setFieldTouched } =
+    useFormikContext()
   const inputTouched = touched[name]
   const inputErrors = errors[name]
   const inputValue = values[name]
@@ -46,6 +42,7 @@ export default function FormikInput({
         name={name}
         onChange={handleChange}
         onBlur={() => setFieldTouched(name, true)}
+        {...rest}
       />
       {inputTouched &&
         hasErrors &&

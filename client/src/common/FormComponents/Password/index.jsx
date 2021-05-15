@@ -23,13 +23,8 @@ export default function Password({ isLogin, autoComplete, name, label }) {
   const [showPassword, setShowPassword] = useState(false)
   const [focused, setFocus] = useState(false)
   const classes = useStyles({ focused, isLogin })
-  const {
-    values,
-    handleChange,
-    touched,
-    errors,
-    setFieldTouched,
-  } = useFormikContext()
+  const { values, handleChange, touched, errors, setFieldTouched } =
+    useFormikContext()
 
   const handleShowPassword = useCallback(
     () => setShowPassword((prev) => !prev),
@@ -64,7 +59,7 @@ export default function Password({ isLogin, autoComplete, name, label }) {
         type={showPassword ? 'text' : 'password'}
         value={values[name]}
         name={name}
-        placeholder={isLogin && label}
+        placeholder={isLogin && label ? label : ''}
         onFocus={toggleFocus}
         onBlur={handleBlur}
         onChange={handleChange}

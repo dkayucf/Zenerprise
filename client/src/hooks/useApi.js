@@ -12,7 +12,8 @@ const defaultState = {
   isIdle: true,
   isLoading: false,
   hasError: false,
-  isSuccessful: false
+  isSuccessful: false,
+  response: {}
 }
 const initializeState = (initialState) => reduce((acc, val) =>  mergeRight(acc, { [val]: defaultState }), {}, initialState)
 
