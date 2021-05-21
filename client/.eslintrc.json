@@ -5,11 +5,6 @@
       "es6": true,
       "jest": true
     },
-    "globals": {
-      "angular": true,
-      "$": true,
-      "jsPDF": true
-    },
     "rules": {
       "default-case": "error",
       "eqeqeq": "error",

@@ -1,7 +1,10 @@
+/* eslint-disable import/first */
+require('dotenv').config()
+
 import express from 'express'
-import logger from 'morgan'
-import bodyParser from 'body-parser'
-import cookieParser from 'cookie-parser'
+import session from 'express-session'
+import connectToDB from './database/db'
+import morgan from 'morgan'
 import compress from 'compression'
 import methodOverride from 'method-override'
 import cors from 'cors'
@@ -9,29 +12,32 @@ import httpStatus from 'http-status'
 import expressWinston from 'express-winston'
 import expressValidation from 'express-validation'
 import helmet from 'helmet'
-import path from 'path'
-import Promise from 'bluebird'
-import mongoose from 'mongoose'
 import winstonInstance from './config/winston'
-import publicRoutes from './server/routes/public'
-import privateRoutes from './server/routes/private'
-import APIError from './server/helpers/APIError'
-import config from './config/env'
+import publicRoutes from './routes/public'
+import privateRoutes from './routes/private/index'
+import APIError from './helpers/APIError'
 
-const session = require('express-session')
-const MongoDBSession = require('connect-mongodb-session')(session)
+require = require('esm')(module)
 
 const app = express()
+const apiPort = 5000
+const environment = process.env.NODE_ENV
+const sessionSecret = process.env.SESSION_SECRET
 
-if (config.env === 'development') {
-  app.use(logger('dev'))
+app.use(morgan('combined'))
+
+if (environment === 'development') {
+  app.use(
+    morgan('dev', {
+      skip(req, res) {
+        return res.statusCode < 400
+      }
+    })
+  )
 }
 
-// parse body params and attache them to req.body
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(express.json())
 
-app.use(cookieParser())
 app.use(compress())
 app.use(methodOverride())
 
@@ -41,85 +47,60 @@ app.use(helmet())
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors())
 
-// promisify mongoose
-Promise.promisifyAll(mongoose)
-
-console.log("server started....................") //eslint-disable-line
-// connect to mongo db
-mongoose.connect(
-  config.db,
-  {
-    bufferMaxEntries: 0,
-    socketTimeoutMS: 0,
-    keepAlive: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true
-  },
-  () => {
-    if (config.env === 'test') {
-      mongoose.connection.db.dropDatabase()
-    }
-    console.log('MONGO-DB CONNECTED')
-  }
-)
-mongoose.connection.on('error', () => {
-  throw new Error(`unable to connect to database: ${config.db}`)
-})
+const store = connectToDB()
 
 const debug = require('debug')('express-mongoose-es6-rest-api:index')
 
-const store = new MongoDBSession({
-  uri: config.db,
-  collection: 'userSessions'
-})
-
-const sess = {
-  secret: config.sessionSecret,
-  resave: false,
-  saveUninitialized: true,
-  store,
-  cookie: {
-    secret: true,
-    expires: false,
-    secure: false,
-  },
-  rolling: true,
-}
-
-if (config.env === 'production') {
-  sess.cookie.secure = true
-  sess.cookie.maxAge = 7200000
-}
-app.use(session(sess))
-
 // enable detailed API logging in dev env
-if (config.env === 'development') {
+if (environment === 'development') {
   expressWinston.requestWhitelist.push('body')
   expressWinston.responseWhitelist.push('body')
-  app.use(expressWinston.logger({
-    winstonInstance,
-    meta: true, // optional: log meta data about request (defaults to true)
-    msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
-    colorStatus: true // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
-  }))
+  app.use(
+    expressWinston.logger({
+      winstonInstance,
+      meta: true, // optional: log meta data about request (defaults to true)
+      msg:
+        'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
+      colorStatus: true // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
+    })
+  )
 
-  app.use((req, res, next) => {
+  app.all('*', (req, res, next) => {
     res.header('Access-Control-Allow-Credentials', true)
     res.header('Access-Control-Allow-Origin', req.headers.origin)
-    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS')
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept')
+    res.header(
+      'Access-Control-Allow-Methods',
+      'GET,PUT,POST,DELETE,UPDATE,OPTIONS'
+    )
+    res.header(
+      'Access-Control-Allow-Headers',
+      'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept'
+    )
     next()
   })
 }
 
-// mount public folder on / path
-app.get('/', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../public/index.html'))
-})
+const sess = {
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: true,
+  store: store,
+  cookie: {
+    httpOnly: false,
+    secure: false,
+    expires: false,
+    maxAge: 7200000
+  },
+  rolling: true
+}
 
-app.use(express.static('public'))
-app.use('/static/images', express.static('images'))
+if (environment === 'production') {
+  app.set('trust proxy', 1) // trust first proxy
+  sess.cookie.secure = true // serve secure cookies
+  sess.cookie.httpOnly = true
+}
+
+app.use(session(sess))
 
 const isAuth = (req, res, next) => {
   if (req.session.isAuth) {
@@ -143,7 +124,9 @@ app.use('/apix', isAuth, privateRoutes)
 app.use((err, req, res, next) => {
   if (err instanceof expressValidation.ValidationError) {
     // validation error contains errors which is an array of error each containing message[]
-    const unifiedErrorMessage = err.errors.map(error => error.messages.join('. ')).join(' and ')
+    const unifiedErrorMessage = err.errors
+      .map(error => error.messages.join('. '))
+      .join(' and ')
     const error = new APIError(unifiedErrorMessage, err.status, true)
     return next(error)
   } else if (!(err instanceof APIError)) {
@@ -159,29 +142,21 @@ app.use((req, res, next) => {
   return next(err)
 })
 
-// log error in winston transports except when executing test suite
-// if (config.env !== 'test') {
-//   app.use(expressWinston.errorLogger({
-//     winstonInstance
-//   }))
-// }
-
 // error handler, send stacktrace only during development
 app.use((
   err,
   req,
   res,
   next // eslint-disable-line no-unused-vars
-) => res.status(err.status).json({
+) =>
+  res.status(err.status).json({
     message: err.isPublic ? err.message : httpStatus[err.status],
-    stack: config.env === 'development' ? err.stack : {}
-  }))
+    stack: environment === 'development' ? err.stack : {}
+  })
+)
 
-// listen on port config.port
-app.listen(process.env.PORT || config.port, () => {
-  console.log(
-    `server started on Port: ${config.port} Environment:${config.env}`
-  )
+app.listen(apiPort, () => {
+  console.log(`Server started on Port: ${apiPort} Environment: ${environment}`)
 })
 
 export default app
