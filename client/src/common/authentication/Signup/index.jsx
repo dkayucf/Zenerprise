@@ -9,8 +9,13 @@ import { fullValidatorForSchema } from '../../FormComponents/helpers'
 import { useAuth } from '../../../contexts/provideAuth'
 import { useRouter } from '../../../hooks/useRouter'
 
-const validationSchema = (validateUser) =>
-  yup.object({
+let _cachedEmail = ''
+let _isValidEmail = false
+let _cachedPhone = ''
+let _isValidPhone = false
+
+const validationSchema = (validateUser) => {
+  return yup.object({
     firstName: yup
       .string('Enter your first name')
       .required('First name is required'),
@@ -21,21 +26,23 @@ const validationSchema = (validateUser) =>
       .string('Enter your email')
       .email('Enter a valid email')
       .test('Valid Email', 'Email is unavailable', (value) => {
-        if (value) {
-          return validateUser('email')(value)
-        } else {
-          return true
+        if (value !== '' && value !== _cachedEmail) {
+          const validatedEmail = validateUser('email')(value)
+          _isValidEmail = validatedEmail
+          _cachedEmail = value
         }
+        return _isValidEmail
       })
       .required('Email is required'),
     phone: yup
       .string('Enter your mobile phone number ')
       .test('Valid Phone Number', 'Phone number is unavailable', (value) => {
-        if (value) {
-          return validateUser('phone')(value)
-        } else {
-          return true
+        if (value !== '' && value !== _cachedPhone) {
+          const validatedPhone = validateUser('phone')(value)
+          _isValidPhone = validatedPhone
+          _cachedPhone = value
         }
+        return _isValidPhone
       })
       .required('Mobile phone number is required'),
     phoneData: yup.object({
@@ -66,6 +73,7 @@ const validationSchema = (validateUser) =>
       .oneOf([yup.ref('password'), null], 'Passwords must match')
       .required('Please confirm your password'),
   })
+}
 
 export default function SignUp() {
   const { push } = useRouter()
@@ -96,12 +104,13 @@ export default function SignUp() {
         validate={fullValidatorForSchema(validationSchema(validateUser))}
         validateOnChange={false}
       >
-        {({ values, handleSubmit, isValid, dirty }) => (
+        {({ values, handleSubmit, isValid, dirty, setFieldError }) => (
           <SignUpForm
             values={values}
             handleSubmit={handleSubmit}
             isValid={isValid}
             dirty={dirty}
+            setFieldError={setFieldError}
           />
         )}
       </Formik>

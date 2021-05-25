@@ -19,17 +19,31 @@ const useStyles = makeStyles((theme) => ({
   }),
 }))
 
-export default function Password({ isLogin, autoComplete, name, label }) {
+export default function Password({
+  isLogin,
+  autoComplete,
+  name,
+  label,
+  validateOnChange,
+}) {
   const [showPassword, setShowPassword] = useState(false)
   const [focused, setFocus] = useState(false)
   const classes = useStyles({ focused, isLogin })
-  const { values, handleChange, touched, errors, setFieldTouched } =
+  const { values, touched, errors, setFieldTouched, setFieldValue } =
     useFormikContext()
 
   const handleShowPassword = useCallback(
     () => setShowPassword((prev) => !prev),
     []
   )
+
+  const handleChange = (e) => {
+    if (validateOnChange) {
+      setFieldValue(name, e.target.value, true)
+    } else {
+      setFieldValue(name, e.target.value, false)
+    }
+  }
 
   const toggleFocus = useCallback(() => setFocus((prev) => !prev), [])
   const handleBlur = useCallback(() => {
@@ -92,9 +106,11 @@ Password.propTypes = {
   label: PropTypes.string,
   isLogin: PropTypes.bool,
   autoComplete: PropTypes.string,
+  validateOnChange: PropTypes.bool,
 }
 
 Password.defaultProps = {
   autoComplete: 'none',
   isLogin: false,
+  validateOnChange: true,
 }

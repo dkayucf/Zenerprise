@@ -1,5 +1,8 @@
-build:
+build-dev:
 	docker-compose up --build --remove-orphans
+
+build-prod:
+	docker-compose up --build --remove-orphans --scale zenerprise-api=5
 
 up:
 	docker-compose up

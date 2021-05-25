@@ -38,7 +38,13 @@ const InputIcon = ({ isLoading, isSuccessful, isValid }) => {
   return null
 }
 
-export default function SignUpForm({ handleSubmit, values, isValid, dirty }) {
+export default function SignUpForm({
+  handleSubmit,
+  values,
+  isValid,
+  dirty,
+  setFieldError,
+}) {
   const classes = useStyles()
   const {
     signUpStatus,
@@ -53,11 +59,13 @@ export default function SignUpForm({ handleSubmit, values, isValid, dirty }) {
 
   useEffect(() => {
     resetEmailValidate()
-  }, [values.email, resetEmailValidate])
+    setFieldError('email', '')
+  }, [values.email, resetEmailValidate, setFieldError])
 
   useEffect(() => {
     resetPhoneValidate()
-  }, [values.phone, resetPhoneValidate])
+    setFieldError('phone', '')
+  }, [values.phone, resetPhoneValidate, setFieldError])
 
   useEffect(() => {
     resetLoginRequest()
@@ -104,6 +112,7 @@ export default function SignUpForm({ handleSubmit, values, isValid, dirty }) {
             required
             autoComplete="email"
             type="email"
+            validateOnChange={false}
             endAdornment={
               <InputAdornment position="end">
                 <InputIcon
@@ -172,4 +181,5 @@ SignUpForm.propTypes = {
   isValid: PropTypes.bool,
   handleSubmit: PropTypes.func,
   values: PropTypes.object,
+  setFieldError: PropTypes.func,
 }

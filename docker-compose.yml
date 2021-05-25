@@ -6,7 +6,6 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile.dev
-    container_name: zenerprise_nginx
     env_file: ./server/config/env/dev.env
     # volumes allow sharing of data in run-time between host and container
     volumes:

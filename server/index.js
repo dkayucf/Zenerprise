@@ -1,6 +1,6 @@
 /* eslint-disable import/first */
 require('dotenv').config()
-
+const os = require('os')
 import express from 'express'
 import session from 'express-session'
 import connectToDB from './database/db'
@@ -77,6 +77,10 @@ if (environment === 'development') {
       'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept'
     )
     next()
+  })
+
+  app.use('/apix/whoami', function(req, res) {
+    res.status(200).send('<html>I am ' + os.hostname() + '</html>')
   })
 }
 

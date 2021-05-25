@@ -14,14 +14,23 @@ export default function FormikInput({
   required,
   autoComplete,
   type,
+  validateOnChange,
   ...rest
 }) {
-  const { values, handleChange, touched, errors, setFieldTouched } =
+  const { values, touched, errors, setFieldTouched, setFieldValue } =
     useFormikContext()
   const inputTouched = touched[name]
   const inputErrors = errors[name]
   const inputValue = values[name]
   const hasErrors = inputErrors && inputErrors.length > 0
+
+  const handleChange = (e) => {
+    if (validateOnChange) {
+      setFieldValue(name, e.target.value, true)
+    } else {
+      setFieldValue(name, e.target.value, false)
+    }
+  }
 
   return (
     <FormControl
@@ -61,10 +70,12 @@ FormikInput.propTypes = {
   type: PropTypes.string,
   autoComplete: PropTypes.string,
   required: PropTypes.bool,
+  validateOnChange: PropTypes.bool,
 }
 
 FormikInput.defaultProps = {
   required: false,
   autoComplete: 'none',
   type: 'text',
+  validateOnChange: true,
 }
