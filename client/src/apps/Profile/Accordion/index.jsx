@@ -1,12 +1,12 @@
 import React from 'react'
+import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import * as yup from 'yup'
-import { makeStyles, withStyles } from '@material-ui/core/styles'
 import {
   Typography,
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
+  Accordion as MuiAccordion,
+  AccordionDetails as MuiAccordionDetails,
+  AccordionSummary as MuiAccordionSummary,
   Divider,
   Box,
   Button,
@@ -15,40 +15,44 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import GenericForm from '../../../common/FormComponents/GenericForm'
 import ActionButtons from './ActionButtons'
 
-const useStyles = makeStyles(({ palette }) => ({
-  root: {
-    width: '100%',
-    boxShadow: 'none',
-    border: `1px solid ${palette.divider}`,
-    borderLeft: 0,
-    borderRight: 0,
-    borderBottom: ({ lastAccordion }) =>
-      lastAccordion ? `1px solid ${palette.divider}` : 0,
-  },
-  icon: {
-    verticalAlign: 'bottom',
-    height: 20,
-    width: 20,
-  },
-  details: {
-    alignItems: 'center',
-  },
-  updateBtn: {
-    marginLeft: 'auto',
-  },
-}))
+const Accordion = styled(MuiAccordion)`
+  ${({ theme, lastAccordion }) => `
+    && {
+      width: 100%;
+      box-shadow: none;
+      border: 1px solid ${theme.palette.divider};
+      border-left: 0;
+      border-right: 0;
+      border-bottom: ${
+        lastAccordion ? `1px solid ${theme.palette.divider}` : 0
+      };
+    }
+  `}
+`
 
-const StyledAccordionSummary = withStyles({
-  expanded: {},
-  content: {
-    alignItems: 'center',
-  },
-  expandIcon: {
-    '&$expanded': {
-      transform: 'rotate(90deg)',
-    },
-  },
-})(AccordionSummary)
+const AccordionDetails = styled(MuiAccordionDetails)`
+  align-items: center;
+`
+const UpdateButton = styled(Button)`
+  margin-left: auto;
+`
+
+const AccordionSummary = styled(MuiAccordionSummary)`
+  &&.MuiAccordionSummary-root {
+    min-height: 64px;
+  }
+  .MuiAccordionSummary-content {
+    align-items: center;
+    &.Mui-expanded {
+      margin: 12px 0;
+    }
+  }
+  .MuiAccordionSummary-expandIcon {
+    &.Mui-expanded {
+      transform: rotate(90deg);
+    }
+  }
+`
 
 const getValidationSchema = (label) => {
   switch (label) {
@@ -139,8 +143,6 @@ export default function AccordionForm({
   handleSubmit,
   expanded,
 }) {
-  const classes = useStyles({ lastAccordion })
-
   return (
     <GenericForm
       initialValues={initialValues}
@@ -148,12 +150,12 @@ export default function AccordionForm({
       onSubmit={handleSubmit}
     >
       <Accordion
-        className={classes.root}
+        lastAccordion={lastAccordion}
         expanded={expanded}
         onChange={handleAccordion}
         square
       >
-        <StyledAccordionSummary
+        <AccordionSummary
           expandIcon={<ChevronRightIcon />}
           aria-controls="panel1c-content"
           id={`${label}Panel`}
@@ -170,15 +172,9 @@ export default function AccordionForm({
               {displayValue}
             </Box>
           </Box>
-          {!expanded && (
-            <Button className={classes.updateBtn} color="primary">
-              Update
-            </Button>
-          )}
-        </StyledAccordionSummary>
-        <AccordionDetails className={classes.details}>
-          {children}
-        </AccordionDetails>
+          {!expanded && <UpdateButton color="primary">Update</UpdateButton>}
+        </AccordionSummary>
+        <AccordionDetails>{children}</AccordionDetails>
         <Divider />
         <ActionButtons
           initialValues={initialValues}

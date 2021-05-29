@@ -1,11 +1,15 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-
-import { ThemeProvider } from '@material-ui/core/styles'
+import { ThemeProvider } from 'styled-components'
+import { ThemeProvider as MuiThemeProvider } from '@material-ui/core/styles'
 import theme from '../theme'
 
 const ZenerpriseThemeProvider = ({ children }) => {
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>
+  return (
+    <MuiThemeProvider theme={theme}>
+      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+    </MuiThemeProvider>
+  )
 }
 
 ZenerpriseThemeProvider.propTypes = {
