@@ -9,7 +9,7 @@ import AuthCard from '../AuthCard'
 import { ButtonRouter } from '../../RouterLink'
 import { fullValidatorForSchema } from '../../FormComponents/helpers'
 
-import { useAuth } from '../../../contexts/provideAuth'
+import { useAuth } from '../../../contexts/auth'
 import { useRouter } from '../../../hooks/useRouter'
 import { test } from 'ramda'
 
@@ -66,10 +66,10 @@ export default function SignIn() {
           user: '',
           password: '',
         }}
-        onSubmit={useCallback((values) => login(values, redirect), [
-          login,
-          redirect,
-        ])}
+        onSubmit={useCallback(
+          (values) => login(values, redirect),
+          [login, redirect]
+        )}
         validate={fullValidatorForSchema(validationSchema)}
       >
         {({ handleSubmit, values }) => (

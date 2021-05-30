@@ -8,7 +8,7 @@ import PhoneNumber from '../../FormComponents/PhoneNumber'
 import Password from '../../FormComponents/Password'
 import Input from '../../FormComponents/FormikInput'
 import LoadingButton from '../../LoadingButton'
-import { useAuth } from '../../../contexts/provideAuth'
+import { useAuth } from '../../../contexts/auth'
 import { LinkRouter } from '../../RouterLink'
 import { useRouter } from '../../../hooks/useRouter'
 

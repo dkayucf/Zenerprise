@@ -22,6 +22,7 @@ const useStyles = makeStyles({
     width: '100%',
     borderLeft: ({ isXSmall }) => isXSmall && 0,
     borderRight: ({ isXSmall }) => isXSmall && 0,
+    overflow: 'unset',
   },
   cardContent: {
     display: 'flex',

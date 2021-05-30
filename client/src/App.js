@@ -5,7 +5,7 @@ import {
   Route,
   useLocation
 } from "react-router-dom"
-import ProvideAuth  from './contexts/provideAuth'
+import ProvideAuth  from './contexts/auth'
 import { PrivateRoute, ProtectedRoutes } from './routes/protected'
 import { PublicRoutes } from './routes/public'
 import Layout from './common/Layout/'

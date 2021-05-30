@@ -1,4 +1,5 @@
 import React from 'react'
+import { FieldArray } from 'formik'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import * as yup from 'yup'
@@ -16,7 +17,7 @@ import GenericForm from '../../../common/FormComponents/GenericForm'
 import ActionButtons from './ActionButtons'
 
 const Accordion = styled(MuiAccordion)`
-  ${({ theme, lastAccordion }) => `
+  ${({ theme, $lastAccordion }) => `
     && {
       width: 100%;
       box-shadow: none;
@@ -24,7 +25,7 @@ const Accordion = styled(MuiAccordion)`
       border-left: 0;
       border-right: 0;
       border-bottom: ${
-        lastAccordion ? `1px solid ${theme.palette.divider}` : 0
+        $lastAccordion ? `1px solid ${theme.palette.divider}` : 0
       };
     }
   `}
@@ -33,7 +34,7 @@ const Accordion = styled(MuiAccordion)`
 const AccordionDetails = styled(MuiAccordionDetails)`
   align-items: center;
 `
-const UpdateButton = styled(Button)`
+const StyledButton = styled(Button)`
   margin-left: auto;
 `
 
@@ -67,8 +68,15 @@ const getValidationSchema = (label) => {
       })
     case 'Password':
       return yup.object({
+        oldPassword: yup
+          .string('Enter your old password')
+          .required('Old password is required'),
         password: yup
-          .string('Enter your password')
+          .string('Enter your new password')
+          .notOneOf(
+            [yup.ref('oldPassword'), null],
+            'New password must be different then old password'
+          )
           .matches(/^.{8,}$/, '8 characters or longer')
           .matches(
             /^((?=.*?[a-zA-Z])|(?=.*?[#?!@$%^&*-]))/,
@@ -82,10 +90,14 @@ const getValidationSchema = (label) => {
             /^((?=.*?[0-9])|(?=.*?[a-zA-Z]))/,
             'At least 1 letter or number.'
           )
-          .required('Password is required'),
+          .required('New password is required'),
         confirmPassword: yup
           .string()
-          .oneOf([yup.ref('password'), null], 'Passwords must match'),
+          .oneOf(
+            [yup.ref('password'), null],
+            'Confirm password must match new password'
+          )
+          .required('Confirm password is required'),
       })
     case 'Phone Number':
       return yup.object({
@@ -101,11 +113,16 @@ const getValidationSchema = (label) => {
         phoneFormatted: yup.string(),
       })
     case 'Email':
-      return yup.object({
-        email: yup
-          .string('Enter your email')
-          .email('Enter a valid email')
-          .required('Email is required'),
+      return yup.object().shape({
+        emails: yup.array().of(
+          yup.object({
+            email: yup
+              .string('Enter your email')
+              .email('Enter a valid email')
+              .required('Email is required'),
+            primaryEmail: yup.boolean(),
+          })
+        ),
       })
     case 'Address':
       return yup.object({
@@ -136,12 +153,14 @@ const getValidationSchema = (label) => {
 export default function AccordionForm({
   children,
   label,
+  name,
   displayValue,
   initialValues,
   lastAccordion,
   handleAccordion,
   handleSubmit,
   expanded,
+  handleAddAction,
 }) {
   return (
     <GenericForm
@@ -149,44 +168,64 @@ export default function AccordionForm({
       validationSchema={getValidationSchema(label)}
       onSubmit={handleSubmit}
     >
-      <Accordion
-        lastAccordion={lastAccordion}
-        expanded={expanded}
-        onChange={handleAccordion}
-        square
-      >
-        <AccordionSummary
-          expandIcon={<ChevronRightIcon />}
-          aria-controls="panel1c-content"
-          id={`${label}Panel`}
-        >
-          <Box
-            display="flex"
-            flexGrow={1}
-            flexWrap={{ xs: 'wrap', sm: 'nowrap' }}
+      <FieldArray name={name}>
+        {({ remove, push }) => (
+          <Accordion
+            $lastAccordion={lastAccordion}
+            expanded={expanded}
+            onChange={handleAccordion}
+            square
           >
-            <Box minWidth={150} maxWidth={170} flex="0 0 30%">
-              <Typography variant="h5">{label}</Typography>
-            </Box>
-            <Box flex="0 0 45%" whiteSpace="nowrap">
-              {displayValue}
-            </Box>
-          </Box>
-          {!expanded && <UpdateButton color="primary">Update</UpdateButton>}
-        </AccordionSummary>
-        <AccordionDetails>{children}</AccordionDetails>
-        <Divider />
-        <ActionButtons
-          initialValues={initialValues}
-          handleAccordion={handleAccordion}
-        />
-      </Accordion>
+            <AccordionSummary
+              expandIcon={<ChevronRightIcon />}
+              aria-controls="panel1c-content"
+              id={`${label}Panel`}
+            >
+              <Box
+                display="flex"
+                flexGrow={1}
+                flexWrap={{ xs: 'wrap', sm: 'nowrap' }}
+              >
+                <Box minWidth={150} maxWidth={170} flex="0 0 30%">
+                  <Typography variant="h5">{label}</Typography>
+                </Box>
+                <Box flex="0 0 45%" whiteSpace="nowrap">
+                  {displayValue}
+                </Box>
+              </Box>
+              {expanded ? null : (
+                <StyledButton color="primary">Update</StyledButton>
+              )}
+            </AccordionSummary>
+            <AccordionDetails>{children}</AccordionDetails>
+            <Divider />
+            <ActionButtons
+              initialValues={initialValues}
+              handleAccordion={handleAccordion}
+            >
+              {handleAddAction ? (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleAddAction(push)
+                  }}
+                >
+                  + Add
+                </Button>
+              ) : null}
+            </ActionButtons>
+          </Accordion>
+        )}
+      </FieldArray>
     </GenericForm>
   )
 }
 
 AccordionForm.propTypes = {
   label: PropTypes.string.isRequired,
+  name: PropTypes.string,
   children: PropTypes.node.isRequired,
   displayValue: PropTypes.oneOfType([PropTypes.string, PropTypes.element])
     .isRequired,
@@ -196,4 +235,10 @@ AccordionForm.propTypes = {
   expanded: PropTypes.bool.isRequired,
   handleAccordion: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
+  handleAddAction: PropTypes.func,
+}
+
+AccordionForm.defaultProps = {
+  name: '',
+  lastAccordion: false,
 }

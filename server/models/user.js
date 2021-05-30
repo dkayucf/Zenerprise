@@ -95,6 +95,25 @@ const AddressSchema = new Schema(
 )
 
 /**
+ * Email Schema
+ */
+const EmailSchema = new Schema(
+  {
+    email: {
+      type: String,
+      required: true
+    },
+    primaryEmail: {
+      type: Boolean,
+      default: true
+    }
+  },
+  {
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+  }
+)
+
+/**
  * User Schema
  */
 const UserSchema = new Schema(
@@ -109,10 +128,7 @@ const UserSchema = new Schema(
     },
     phoneNumbers: [PhoneNumberSchema],
     addresses: [AddressSchema],
-    email: {
-      type: String,
-      required: true
-    },
+    emails: [EmailSchema],
     password: {
       type: String,
       required: true,
@@ -176,46 +192,6 @@ UserSchema.pre('save', function userSchemaPre(next) {
 /**
  * Methods
  */
-/**
- * comapare the stored hashed value of the password with the given value of the password
- * @param pw - password whose value has to be compare
- * @param cb - callback function
- */
-
-UserSchema.methods.comparePassword = function comparePassword(pw, cb) {
-  const that = this
-  // eslint-disable-next-line
-  bcrypt.compare(pw, that.password, (err, isMatch) => {
-    if (err) {
-      return cb(err)
-    }
-    cb(null, isMatch)
-  })
-}
-
-/**
- * encrypt the users password
- * @param pw - raw password from user that needs to be encrypted
- * @param cb - callback function
- */
-UserSchema.methods.encryptPassword = function encryptPassword(pw, cb) {
-  const user = this
-
-  // eslint-disable-next-line
-  bcrypt.genSalt(10, (err, salt) => {
-    if (err) {
-      return cb(err)
-    }
-    // eslint-disable-next-line
-    bcrypt.hash(pw, salt, (hashErr, hash) => {
-      if (hashErr) {
-        return cb(hashErr)
-      }
-      user.password = hash
-      cb(null, user)
-    })
-  })
-}
 
 UserSchema.method({})
 

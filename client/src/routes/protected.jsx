@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react'
 import PropTypes from 'prop-types'
 import { Switch, Route, Redirect, useRouteMatch } from 'react-router-dom'
-import { useAuth } from '../contexts/provideAuth'
+import { useAuth } from '../contexts/auth'
 import { Dashboard, Profile } from '../Pages/protected/'
 import { propOr } from 'ramda'
 

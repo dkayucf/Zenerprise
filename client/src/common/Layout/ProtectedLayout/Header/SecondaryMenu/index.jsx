@@ -9,9 +9,10 @@ import {
   Divider,
 } from '@material-ui/core'
 import { withStyles, makeStyles } from '@material-ui/core/styles'
-import { useHeader } from '../../../../../contexts/provideHeader'
-import { useAuth } from '../../../../../contexts/provideAuth'
+import { useHeader } from '../../../../../contexts/header'
+import { useAuth } from '../../../../../contexts/auth'
 import { useRouter } from '../../../../../hooks/useRouter'
+import { compose, prop, filter, pluck, head } from 'ramda'
 
 const StyledMenu = withStyles(({ spacing }) => ({
   list: {
@@ -67,6 +68,12 @@ const SecondaryMenu = () => {
   const redirect = useCallback(() => push('/auth/dashboard'), [push])
   const handleLogout = useCallback(() => logout(redirect), [logout, redirect])
   const handleProfile = useCallback(() => push('/auth/profile'), [push])
+  const primaryEmail = compose(
+    head,
+    pluck('email'),
+    filter((email) => email.primaryEmail),
+    prop('email')
+  )(user)
 
   return (
     <StyledMenu
@@ -87,7 +94,7 @@ const SecondaryMenu = () => {
             primary={user.name.fullName || 'Hello'}
             primaryTypographyProps={{ style: { fontWeight: 700 } }}
           />
-          <ListItemText primary={user.email} />
+          <ListItemText primary={primaryEmail} />
         </Box>
       </StyledMenuItem>
       <Divider />

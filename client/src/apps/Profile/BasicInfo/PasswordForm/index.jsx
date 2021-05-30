@@ -6,10 +6,25 @@ export default function PasswordForm() {
   return (
     <Grid container>
       <Grid item xs={12}>
-        <Password />
+        <Password
+          autoComplete="current-password"
+          name="oldPassword"
+          label="Old password"
+        />
       </Grid>
       <Grid item xs={12}>
-        <Password confirmPassword />
+        <Password
+          autoComplete="new-password"
+          name="password"
+          label="New password"
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Password
+          autoComplete="new-password"
+          name="confirmPassword"
+          label="Confirm new password"
+        />
       </Grid>
     </Grid>
   )

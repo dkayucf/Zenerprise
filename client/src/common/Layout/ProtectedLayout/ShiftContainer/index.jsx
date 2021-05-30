@@ -3,7 +3,7 @@ import clsx from 'clsx'
 import PropTypes from 'prop-types'
 import { Container } from '@material-ui/core'
 import { makeStyles, createStyles } from '@material-ui/core/styles'
-import { useHeader } from '../../../../contexts/provideHeader'
+import { useHeader } from '../../../../contexts/header'
 
 const useStyles = makeStyles((theme) =>
   createStyles({

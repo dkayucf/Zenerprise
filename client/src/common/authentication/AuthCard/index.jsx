@@ -11,7 +11,7 @@ import {
 import WarningOutlinedIcon from '@material-ui/icons/WarningOutlined'
 import Alert from '@material-ui/lab/Alert'
 import { makeStyles } from '@material-ui/core/styles'
-import { useAuth } from '../../../contexts/provideAuth'
+import { useAuth } from '../../../contexts/auth'
 
 const useStyles = makeStyles((theme) => ({
   container: {

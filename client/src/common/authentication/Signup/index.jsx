@@ -6,7 +6,7 @@ import AuthCard from '../AuthCard'
 import SignUpForm from './Form'
 import { fullValidatorForSchema } from '../../FormComponents/helpers'
 
-import { useAuth } from '../../../contexts/provideAuth'
+import { useAuth } from '../../../contexts/auth'
 import { useRouter } from '../../../hooks/useRouter'
 
 let _cachedEmail = ''

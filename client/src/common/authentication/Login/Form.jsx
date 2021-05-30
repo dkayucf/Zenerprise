@@ -5,7 +5,7 @@ import UserInput from '../../FormComponents/UserInput'
 import Password from '../../FormComponents/Password'
 import LoadingButton from '../../LoadingButton'
 import { LinkRouter } from '../../RouterLink'
-import { useAuth } from '../../../contexts/provideAuth'
+import { useAuth } from '../../../contexts/auth'
 import { useRouter } from '../../../hooks/useRouter'
 import { Box } from '@material-ui/core'
 

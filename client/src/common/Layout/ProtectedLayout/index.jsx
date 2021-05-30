@@ -5,13 +5,16 @@ import Header from './/Header'
 import Drawer from './Drawer'
 import Footer from '../Shared/Footer'
 import ShiftContainer from './ShiftContainer'
-import HeaderProvider from '../../../contexts/provideHeader.js'
+import HeaderProvider from '../../../contexts/header'
+import SnackbarProvider from '../../../contexts/snackbar'
 
 const ProtectedLayout = ({ children }) => (
   <HeaderProvider>
     <Header />
     <Drawer />
-    <ShiftContainer component="main">{children}</ShiftContainer>
+    <ShiftContainer component="main">
+      <SnackbarProvider>{children}</SnackbarProvider>
+    </ShiftContainer>
     <ShiftContainer component="footer">
       <Footer />
     </ShiftContainer>

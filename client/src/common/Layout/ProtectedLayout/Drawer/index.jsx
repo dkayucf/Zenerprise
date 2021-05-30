@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import clsx from 'clsx'
 import { Drawer, Toolbar, Box } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { useHeader } from '../../../../contexts/provideHeader'
+import { useHeader } from '../../../../contexts/header'
 import Menus from '../Menus'
 
 const useStyles = makeStyles((theme) => ({
@@ -50,12 +50,14 @@ const MenuDrawer = () => {
 
   return (
     <Drawer
-      onMouseEnter={useCallback(() => setDrawerFocusOpen(true), [
-        setDrawerFocusOpen,
-      ])}
-      onMouseLeave={useCallback(() => setDrawerFocusOpen(false), [
-        setDrawerFocusOpen,
-      ])}
+      onMouseEnter={useCallback(
+        () => setDrawerFocusOpen(true),
+        [setDrawerFocusOpen]
+      )}
+      onMouseLeave={useCallback(
+        () => setDrawerFocusOpen(false),
+        [setDrawerFocusOpen]
+      )}
       className={clsx(classes.drawer, {
         [classes.drawerOpen]: drawerOpen || drawerFocusOpen,
         [classes.drawerClose]: !drawerOpen || !drawerFocusOpen,

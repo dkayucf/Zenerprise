@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import httpStatus from 'http-status'
+import bcrypt from 'bcrypt'
 import { head, toUpper, pathOr, path, props } from 'ramda'
 import User from '../models/user'
 import APIError from '../helpers/APIError'
@@ -26,7 +27,7 @@ const setReturnObject = (user, userRoutes) => {
         fullName: getFullName(user)
       },
       initials: getInitials(user),
-      email: user.email,
+      email: user.emails,
       addresses: user.addresses || [],
       phoneNumbers: user.phoneNumbers
     },
@@ -40,7 +41,7 @@ function validateUser(req, res, next) {
   const phoneNumber = pathOr('', ['body', 'phone'], req)
 
   User.findOne({
-    $or: [{ email }, { 'phoneNumbers.phone': phoneNumber }]
+    $or: [{ 'emails.email': email }, { 'phoneNumbers.phone': phoneNumber }]
   })
     .then(foundUser => {
       if (foundUser) {
@@ -85,7 +86,11 @@ function register(req, res, next) {
             phoneFormatted: req.body.phoneFormatted
           }
         ],
-        email: req.body.email,
+        emails: [
+          {
+            email: req.body.email
+          }
+        ],
         password: req.body.password
       })
 
@@ -114,49 +119,48 @@ function login(req, res, next) {
     getConfigPromise('frontend-routes'),
     User.findOneAsync(
       {
-        $or: [{ email: req.body.user }, { 'phoneNumbers.phone': req.body.user }]
+        $or: [
+          { 'emails.email': req.body.user, 'emails.primaryEmail': true },
+          {
+            'phoneNumbers.phone': req.body.user,
+            'phoneNumbers.primaryPhone': true
+          }
+        ]
       },
       '+password'
     )
   ])
     .then(([routes, user]) => {
       if (!user) {
-        req.session.userRoutes = []
-        req.session.isAuth = false
-        req.session.userRole = null
-        req.session.userId = null
         const err = new APIError(
           'Incorrect Login Information',
           httpStatus.UNAUTHORIZED,
           false
         )
         return next(err)
-      } else {
-        return user.comparePassword(
-          req.body.password,
-          (passwordError, isMatch) => {
-            if (passwordError || !isMatch) {
-              req.session.isAuth = false
-              req.session.userRoutes = []
-              req.session.userRole = null
-              req.session.userId = null
-              const err = new APIError(
-                'Incorrect Login Information',
-                httpStatus.UNAUTHORIZED,
-                false
-              )
-              return next(err)
-            }
-            req.session.userId = user._id
-            req.session.isAuth = true
-            req.session.userRoutes = routes
-            req.session.userRole = user.role
-
-            const returnObj = setReturnObject(user, routes)
-            return res.json(returnObj)
-          }
-        )
       }
+      req.routes = routes
+      req.user = user
+
+      return bcrypt.compare(req.body.password, user.password)
+    })
+    .then(isMatch => {
+      if (!isMatch) {
+        const err = new APIError(
+          'Incorrect Login Information',
+          httpStatus.UNAUTHORIZED,
+          false
+        )
+        return next(err)
+      }
+
+      req.session.userId = req.user._id
+      req.session.isAuth = true
+      req.session.userRoutes = req.routes
+      req.session.userRole = req.user.role
+
+      const returnObj = setReturnObject(req.user, req.routes)
+      return res.json(returnObj)
     })
     .catch(e => {
       const err = new APIError(
@@ -231,15 +235,6 @@ function forgotPassword(req, res, next) {
 function updateName(req, res, next) {
   const userId = pathOr(null, ['session', 'userId'], req)
 
-  if (!userId) {
-    const err = new APIError(
-      'Incorrect Login Information',
-      httpStatus.UNAUTHORIZED,
-      false
-    )
-    return next(err)
-  }
-
   return User.findOneAndUpdate({ _id: userId }, req.body, { new: true })
     .then(user => {
       const returnObj = setReturnObject(user, req.session.userRoutes)
@@ -250,15 +245,6 @@ function updateName(req, res, next) {
 
 function updateAddress(req, res, next) {
   const userId = pathOr(null, ['session', 'userId'], req)
-
-  if (!userId) {
-    const err = new APIError(
-      'Incorrect Login Information',
-      httpStatus.UNAUTHORIZED,
-      false
-    )
-    return next(err)
-  }
 
   return User.findOneAndUpdate(
     { _id: userId },
@@ -275,15 +261,6 @@ function updateAddress(req, res, next) {
 function updateEmail(req, res, next) {
   const userId = pathOr(null, ['session', 'userId'], req)
 
-  if (!userId) {
-    const err = new APIError(
-      'Incorrect Login Information',
-      httpStatus.UNAUTHORIZED,
-      false
-    )
-    return next(err)
-  }
-
   return User.findOneAndUpdate({ _id: userId }, req.body, { new: true })
     .then(user => {
       const returnObj = setReturnObject(user, req.session.userRoutes)
@@ -295,14 +272,6 @@ function updateEmail(req, res, next) {
 function updatePrimaryPhone(req, res, next) {
   const userId = pathOr(null, ['session', 'userId'], req)
 
-  if (!userId) {
-    const err = new APIError(
-      'Incorrect Login Information',
-      httpStatus.UNAUTHORIZED,
-      false
-    )
-    return next(err)
-  }
   const emailId = path(['body', '_id'], req)
   const [type, phone, phoneFormatted, phoneData] = props(
     ['type', 'phone', 'phoneFormatted', 'phoneData'],
@@ -335,6 +304,37 @@ function updatePrimaryPhone(req, res, next) {
     .catch(e => next(e))
 }
 
+function updatePassword(req, res, next) {
+  const userId = pathOr(null, ['session', 'userId'], req)
+
+  const oldPassword = req.body.oldPassword
+  const newPassword = req.body.password
+
+  User.findOneAsync({ _id: userId }, '+password')
+    .then(user => {
+      req.user = user
+      return bcrypt.compare(oldPassword, user.password)
+    })
+    .then(isMatch => {
+      if (!isMatch) {
+        const err = new APIError(
+          'Incorrect Login Information',
+          httpStatus.UNAUTHORIZED,
+          false
+        )
+        return next(err)
+      }
+
+      req.user.password = newPassword
+      return req.user.saveAsync()
+    })
+    .then(updatedUser => {
+      const returnObj = setReturnObject(updatedUser, req.session.userRoutes)
+      return res.json(returnObj)
+    })
+    .catch(e => next(e))
+}
+
 export default {
   register,
   login,
@@ -344,5 +344,6 @@ export default {
   updateAddress,
   updateEmail,
   updatePrimaryPhone,
+  updatePassword,
   validateUser
 }

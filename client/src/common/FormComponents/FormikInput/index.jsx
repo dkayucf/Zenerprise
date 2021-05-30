@@ -7,6 +7,7 @@ import {
   InputLabel,
   FormHelperText,
 } from '@material-ui/core'
+import { split, path } from 'ramda'
 
 export default function FormikInput({
   name,
@@ -19,9 +20,11 @@ export default function FormikInput({
 }) {
   const { values, touched, errors, setFieldTouched, setFieldValue } =
     useFormikContext()
-  const inputTouched = touched[name]
-  const inputErrors = errors[name]
-  const inputValue = values[name]
+
+  const fieldName = split('.', name)
+  const inputTouched = path(fieldName, touched)
+  const inputErrors = path(fieldName, errors)
+  const inputValue = path(fieldName, values)
   const hasErrors = inputErrors && inputErrors.length > 0
 
   const handleChange = (e) => {

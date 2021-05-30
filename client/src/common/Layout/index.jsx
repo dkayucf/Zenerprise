@@ -6,7 +6,7 @@ import ProtectedLayout from './ProtectedLayout'
 import PublicLayout from './PublicLayout'
 
 import ThemeProvider from './Theme/Provider'
-import { useAuth } from '../../contexts/provideAuth'
+import { useAuth } from '../../contexts/auth'
 
 const Layout = ({ children }) => {
   const { isAuth } = useAuth()

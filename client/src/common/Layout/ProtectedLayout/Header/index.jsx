@@ -12,8 +12,8 @@ import {
 import MenuIcon from '@material-ui/icons/Menu'
 import SearchIcon from '@material-ui/icons/Search'
 import MoreIcon from '@material-ui/icons/MoreVert'
-import { useHeader } from '../../../../contexts/provideHeader'
-import { useAuth } from '../../../../contexts/provideAuth'
+import { useHeader } from '../../../../contexts/header'
+import { useAuth } from '../../../../contexts/auth'
 import SecondaryMenu from './SecondaryMenu'
 
 const useStyles = makeStyles((theme) => ({

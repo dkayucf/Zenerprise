@@ -13,7 +13,9 @@ export default function GenericForm({
     <Formik
       initialValues={initialValues}
       onSubmit={(values, actions) =>
-        onSubmit(values, () => actions.resetForm({ values }))
+        onSubmit(values, (resetValues) =>
+          actions.resetForm({ values: resetValues || values })
+        )
       }
       validate={fullValidatorForSchema(validationSchema)}
     >
@@ -24,7 +26,8 @@ export default function GenericForm({
 
 GenericForm.propTypes = {
   children: PropTypes.node.isRequired,
-  initialValues: PropTypes.object.isRequired,
+  initialValues: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
+    .isRequired,
   onSubmit: PropTypes.func.isRequired,
   validationSchema: PropTypes.object.isRequired,
 }

@@ -37,6 +37,13 @@ export default {
     }
   },
 
+  updatePassword: {
+    body: {
+      oldPassword: Joi.string().required(),
+      password: Joi.string().required()
+    }
+  },
+
   updatePrimaryPhone: {
     body: {
       _id: Joi.objectId(),

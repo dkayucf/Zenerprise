@@ -1,4 +1,4 @@
-import React, { useContext, createContext, useState } from "react"
+import React, { useContext, createContext, useState, useMemo, useCallback } from "react"
 import PropTypes from 'prop-types'
 import { useTheme } from '@material-ui/core/styles'
 import { useMediaQuery } from '@material-ui/core'
@@ -40,46 +40,65 @@ const ProvideHeader = ({ children }) => {
   const mobileMenuId = 'primary-search-account-menu-mobile'
   const shiftContent = (drawerOpen || drawerFocusOpen) && isDesktopMedia
 
-  const handleProfileMenuOpen = (event) => {
+  const handleProfileMenuOpen = useCallback((event) => {
     setAnchorEl(event.currentTarget)
-  }
+  }, [])
 
-  const handleMobileMenuClose = () => {
+  const handleMobileMenuClose = useCallback(() => {
     setMobileMoreAnchorEl(null)
-  }
+  }, [])
 
-  const handleMenuClose = () => {
+  const handleMenuClose = useCallback(() => {
     setAnchorEl(null)
     handleMobileMenuClose()
-  }
+  }, [handleMobileMenuClose])
 
-  const handleMobileMenuOpen = (event) => {
+  const handleMobileMenuOpen = useCallback((event) => {
     setMobileMoreAnchorEl(event.currentTarget)
-  }
+  }, [])
 
-  const handleDrawerToggle = () => setDrawerOpen(!drawerOpen)
+  const handleDrawerToggle = useCallback(() => setDrawerOpen(!drawerOpen), [drawerOpen])
+
+  const MemoizedValue = useMemo(() => ({
+    shiftContent,
+    drawerWidth,
+    drawerVariant,
+    anchorEl,
+    mobileMoreAnchorEl,
+    isMenuOpen,
+    isMobileMenuOpen,
+    drawerOpen,
+    drawerFocusOpen,
+    menuId,
+    mobileMenuId,
+    handleProfileMenuOpen,
+    handleMobileMenuOpen,
+    handleMobileMenuClose,
+    handleMenuClose,
+    handleDrawerToggle,
+    setDrawerOpen,
+    setDrawerFocusOpen
+}), [ shiftContent,
+  drawerWidth,
+  drawerVariant,
+  anchorEl,
+  mobileMoreAnchorEl,
+  isMenuOpen,
+  isMobileMenuOpen,
+  drawerOpen,
+  drawerFocusOpen,
+  menuId,
+  mobileMenuId,
+  handleProfileMenuOpen,
+  handleMobileMenuOpen,
+  handleMobileMenuClose,
+  handleMenuClose,
+  handleDrawerToggle,
+  setDrawerOpen,
+  setDrawerFocusOpen])
 
   return (
-    <headerContext.Provider value={{
-        shiftContent,
-        drawerWidth,
-        drawerVariant,
-        anchorEl,
-        mobileMoreAnchorEl,
-        isMenuOpen,
-        isMobileMenuOpen,
-        drawerOpen,
-        drawerFocusOpen,
-        menuId,
-        mobileMenuId,
-        handleProfileMenuOpen,
-        handleMobileMenuOpen,
-        handleMobileMenuClose,
-        handleMenuClose,
-        handleDrawerToggle,
-        setDrawerOpen,
-        setDrawerFocusOpen
-    }}>
+    <headerContext.Provider value={MemoizedValue}>
       {children}
     </headerContext.Provider>
   )

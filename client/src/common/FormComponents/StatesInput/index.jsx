@@ -3,6 +3,15 @@ import TextField from '@material-ui/core/TextField'
 import { useFormikContext } from 'formik'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { makeStyles } from '@material-ui/core/styles'
+import {
+  anyPass,
+  filter,
+  evolve,
+  compose,
+  propEq,
+  startsWith,
+  toLower,
+} from 'ramda'
 
 const useStyles = makeStyles({
   option: {
@@ -16,24 +25,21 @@ const useStyles = makeStyles({
 
 export default function StateSelect() {
   const classes = useStyles()
-  const {
-    values,
-    touched,
-    errors,
-    setFieldValue,
-    setFieldTouched,
-  } = useFormikContext()
+  const { values, touched, errors, setFieldValue, setFieldTouched } =
+    useFormikContext()
   const inputTouched = touched['state']
   const inputErrors = errors['state']
   const state = values['state']
-  const onChange = useCallback((e, state) => setFieldValue('state', state), [
-    setFieldValue,
-  ])
+  const onChange = useCallback(
+    (e, state) => setFieldValue('state', state),
+    [setFieldValue]
+  )
 
   const hasErrors = inputErrors && inputErrors.length > 0
-  const onBlur = useCallback(() => setFieldTouched('state', true), [
-    setFieldTouched,
-  ])
+  const onBlur = useCallback(
+    () => setFieldTouched('state', true),
+    [setFieldTouched]
+  )
 
   return (
     <Autocomplete
@@ -46,6 +52,18 @@ export default function StateSelect() {
       classes={{
         option: classes.option,
       }}
+      filterOptions={(options, { inputValue }) =>
+        filter(
+          compose(
+            anyPass([propEq('label', true), propEq('value', true)]),
+            evolve({
+              label: (label) => startsWith(toLower(inputValue), toLower(label)),
+              value: (value) => startsWith(toLower(inputValue), toLower(value)),
+            })
+          ),
+          options
+        )
+      }
       autoHighlight
       getOptionLabel={(option) => option.label}
       getOptionSelected={(option, { value }) => option.value === value}
@@ -68,7 +86,7 @@ export default function StateSelect() {
           fullWidth
           inputProps={{
             ...params.inputProps,
-            autoComplete: 'address-level1',
+            autoComplete: 'new-password',
           }}
         />
       )}

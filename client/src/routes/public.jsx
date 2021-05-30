@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Switch, Route, Redirect } from 'react-router-dom'
-import { useAuth } from '../contexts/provideAuth'
+import { useAuth } from '../contexts/auth'
 import Home from '../Pages/public/Home'
 import {
   LoginPage,

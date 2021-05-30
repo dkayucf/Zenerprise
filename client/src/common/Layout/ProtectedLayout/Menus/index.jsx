@@ -6,8 +6,8 @@ import { Box, Divider } from '@material-ui/core'
 import SubMenu from './SubMenu'
 import MenuItemLink from './MenuItemLink'
 import Icon from '../../../Icon/index'
-import { useHeader } from '../../../../contexts/provideHeader'
-import { useAuth } from '../../../../contexts/provideAuth'
+import { useHeader } from '../../../../contexts/header'
+import { useAuth } from '../../../../contexts/auth'
 
 const Menu = () => {
   const { drawerOpen, drawerFocusOpen } = useHeader()

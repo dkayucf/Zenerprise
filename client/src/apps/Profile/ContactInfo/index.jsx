@@ -1,14 +1,13 @@
 import React, { useCallback, useState } from 'react'
-import PropTypes from 'prop-types'
 import { Box, Typography } from '@material-ui/core'
-import { useAuth } from '../../../contexts/provideAuth'
+import { useAuth } from '../../../contexts/auth'
 import { usePersonalInfo } from '../context/personalInfo'
 import Accordion from '../Accordion'
 import AddressForm from './AddressForm'
 import PhoneForm from './PhoneForm'
 import EmailForm from './EmailForm'
 import { LinkRouter } from '../../../common/RouterLink'
-import { prop, compose, filter, head, propOr, pick } from 'ramda'
+import { prop, compose, filter, head, propOr } from 'ramda'
 
 const PhoneDisplayValue = () => {
   const { user } = useAuth()
@@ -31,15 +30,41 @@ const PhoneDisplayValue = () => {
   ))
 }
 
-const AddressDisplayValue = ({
-  country,
-  addressLineOne,
-  addressLineTwo,
-  city,
-  state,
-  postalCode,
-}) => {
+const EmailDisplayValue = () => {
+  const { user } = useAuth()
+  const emailAccounts = prop('email', user)
+
+  if (!emailAccounts || !emailAccounts.length) {
+    return '--'
+  }
+
+  return emailAccounts.map((email, index) => (
+    <Box key={index} display="flex" alignItems="baseline">
+      {email.primaryEmail ? (
+        <Box mr={1}>
+          <Typography variant="body1">{email.email}</Typography>
+          <Typography variant="caption">
+            {email.primaryEmail ? ' (Primary Email)' : ''}
+          </Typography>
+        </Box>
+      ) : null}
+      {emailAccounts.length > 1 ? <LinkRouter to="">More...</LinkRouter> : null}
+    </Box>
+  ))
+}
+
+const AddressDisplayValue = () => {
+  const { user } = useAuth()
+  const addresses = prop('addresses', user)
+
+  if (!addresses || !addresses.length) {
+    return '--'
+  }
+
+  const { country, addressLineOne, addressLineTwo, city, state, postalCode } =
+    head(addresses)
   const { label } = country
+
   return (
     <Box display="flex" alignItems="baseline">
       <Box mr={1}>
@@ -54,13 +79,16 @@ const AddressDisplayValue = ({
   )
 }
 
-AddressDisplayValue.propTypes = {
-  country: PropTypes.string,
-  addressLineOne: PropTypes.string,
-  addressLineTwo: PropTypes.string,
-  city: PropTypes.string,
-  state: PropTypes.string,
-  postalCode: PropTypes.string,
+const initialAddress = {
+  addressLineOne: '',
+  addressLineTwo: '',
+  city: '',
+  state: null,
+  postalCode: '',
+  country: {
+    code: 'US',
+    label: 'United States',
+  },
 }
 
 export default function ContactInfo() {
@@ -72,21 +100,10 @@ export default function ContactInfo() {
     propOr([], 'phoneNumbers')
   )(user)
 
-  const initialAddress = {
-    addressLineOne: '',
-    addressLineTwo: '',
-    city: '',
-    state: '',
-    postalCode: '',
-    country: {
-      code: 'US',
-      label: 'United States',
-    },
-  }
+  const email = prop('email', user)
 
   const hasAddress = user.addresses && user.addresses.length > 0
   const address = hasAddress ? head(prop('addresses', user)) : initialAddress
-  const email = prop('email', user)
 
   const [expanded, setExpanded] = useState(false)
 
@@ -97,6 +114,8 @@ export default function ContactInfo() {
     []
   )
 
+  const handleAddAction = (initialValues) => (pushFn) => pushFn(initialValues)
+
   return (
     <Box mt={5}>
       <Box pl={2}>
@@ -105,9 +124,7 @@ export default function ContactInfo() {
       <Box mt={2}>
         <Accordion
           label="Address"
-          displayValue={
-            hasAddress ? <AddressDisplayValue {...address} /> : '--'
-          }
+          displayValue={<AddressDisplayValue />}
           initialValues={address}
           handleAccordion={handleAccordion('Address')}
           expanded={expanded === 'Address'}
@@ -127,12 +144,14 @@ export default function ContactInfo() {
         </Accordion>
         <Accordion
           label="Email"
-          displayValue={<Typography variant="body1">{email}</Typography>}
-          initialValues={pick(['email'], user)}
+          name="emails"
+          displayValue={<EmailDisplayValue />}
+          initialValues={{ emails: email }}
           lastAccordion
           handleAccordion={handleAccordion('Email')}
           expanded={expanded === 'Email'}
           handleSubmit={updateEmail}
+          handleAddAction={handleAddAction({ email: '', primaryEmail: false })}
         >
           <EmailForm />
         </Accordion>

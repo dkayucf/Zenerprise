@@ -8,7 +8,7 @@ import AuthCard from '../AuthCard'
 import Input from '../../FormComponents/FormikInput'
 import { LinkRouter } from '../../RouterLink'
 
-import { useAuth } from '../../../contexts/provideAuth'
+import { useAuth } from '../../../contexts/auth'
 import { useRouter } from '../../../hooks/useRouter'
 
 const useStyles = makeStyles((theme) => ({
