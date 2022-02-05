@@ -1,8 +1,9 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useFormikContext } from 'formik'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { makeStyles } from '@material-ui/core/styles'
+import { useIsFocusVisible } from '../../../hooks/'
 
 // ISO 3166-1 alpha-2
 // ⚠️ No support for IE 11
@@ -27,16 +28,27 @@ const useStyles = makeStyles({
 })
 
 export default function CountrySelect() {
+  const [open, setOpen] = useState(false)
   const classes = useStyles()
   const { values, errors, touched, setFieldValue, setFieldTouched } =
     useFormikContext()
+  const {
+    isFocusVisible,
+    onBlurVisible,
+    ref: focusVisibleRef,
+  } = useIsFocusVisible()
 
   const inputTouched = touched['country']
   const inputErrors = errors['country']
   const country = values['country']
 
   const onChange = useCallback(
-    (e, country) => setFieldValue('country', country),
+    (e, country) => {
+      if (!country) {
+        setOpen(true)
+      }
+      return setFieldValue('country', country)
+    },
     [setFieldValue]
   )
   const onBlur = useCallback(
@@ -46,16 +58,22 @@ export default function CountrySelect() {
 
   const hasErrors = inputErrors && inputErrors.length > 0
 
+  const handleOpen = (e) => {
+    if (e.target.value !== country?.label || !isFocusVisible(e)) {
+      setOpen(true)
+    }
+  }
+
   return (
     <Autocomplete
+      open={open}
+      onOpen={handleOpen}
+      onClose={() => setOpen(false)}
       id="country-select"
       name="country"
       value={country}
       getOptionLabel={(option) => option.label}
-      getOptionSelected={(option, value) => {
-        console.log(option)
-        return option.code === value.code
-      }}
+      getOptionSelected={(option, value) => option.code === value.code}
       onChange={onChange}
       selectOnFocus
       onBlur={onBlur}
@@ -76,6 +94,7 @@ export default function CountrySelect() {
       }
       renderInput={(params) => (
         <TextField
+          ref={focusVisibleRef}
           {...params}
           error={inputTouched && hasErrors}
           label="Country"

@@ -1,1 +1,5 @@
 export { default as addressValidationSchema } from './addressSchema'
+export { default as emailValidationSchema } from './emailSchema'
+export { default as phoneValidationSchema } from './phoneSchema'
+export { default as passwordValidationSchema } from './passwordSchema'
+export { default as nameValidationSchema } from './nameSchema'

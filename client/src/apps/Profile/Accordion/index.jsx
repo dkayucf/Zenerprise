@@ -17,7 +17,13 @@ import GenericForm from '../../../common/FormComponents/GenericForm'
 import { countries } from '../../../common/FormComponents/CountryInput/'
 import { useAuth } from '../../../contexts/auth'
 import ActionButtons from './ActionButtons'
-import { addressValidationSchema } from '../ValidationSchemas'
+import {
+  addressValidationSchema,
+  emailValidationSchema,
+  phoneValidationSchema,
+  passwordValidationSchema,
+  nameValidationSchema,
+} from '../ValidationSchemas'
 
 const Accordion = styled(MuiAccordion)`
   ${({ theme, $lastAccordion }) => `
@@ -58,91 +64,16 @@ const AccordionSummary = styled(MuiAccordionSummary)`
   }
 `
 
-let _cachedEmail = ''
-let _isValidEmail = false
-
 const getValidationSchema = (label, validateEmail) => {
   switch (label) {
     case 'Name':
-      return yup.object({
-        firstName: yup
-          .string('Enter your first name')
-          .required('First name is required'),
-        lastName: yup
-          .string('Enter your last name')
-          .required('Last name is required'),
-      })
+      return nameValidationSchema
     case 'Password':
-      return yup.object({
-        oldPassword: yup
-          .string('Enter your old password')
-          .required('Old password is required'),
-        password: yup
-          .string('Enter your new password')
-          .notOneOf(
-            [yup.ref('oldPassword'), null],
-            'New password must be different then old password'
-          )
-          .matches(/^.{8,}$/, '8 characters or longer')
-          .matches(
-            /^((?=.*?[a-zA-Z])|(?=.*?[#?!@$%^&*-]))/,
-            'At least 1 letter or symbol (like !@#$%^).'
-          )
-          .matches(
-            /^((?=.*?[0-9])|(?=.*?[#?!@$%^&*-]))/,
-            'At least 1 number or symbol (like !@#$%^).'
-          )
-          .matches(
-            /^((?=.*?[0-9])|(?=.*?[a-zA-Z]))/,
-            'At least 1 letter or number.'
-          )
-          .required('New password is required'),
-        confirmPassword: yup
-          .string()
-          .oneOf(
-            [yup.ref('password'), null],
-            'Confirm password must match new password'
-          )
-          .required('Confirm password is required'),
-      })
+      return passwordValidationSchema
     case 'Phone Number':
-      return yup.object({
-        phone: yup
-          .string('Enter your mobile phone number ')
-          .required('Mobile phone number is required'),
-        phoneData: yup.object({
-          countryCode: yup.string(),
-          dialCode: yup.string(),
-          format: yup.string(),
-          name: yup.string(),
-        }),
-        phoneFormatted: yup.string(),
-      })
+      return phoneValidationSchema
     case 'Email':
-      return yup.object().shape({
-        emails: yup.array().of(
-          yup.object({
-            primaryEmail: yup.boolean(),
-            email: yup.string().when('primaryEmail', {
-              is: true,
-              then: yup.string(),
-              otherwise: yup
-                .string('Enter your email')
-                .email('Enter a valid email')
-                .test('Valid Email', 'Email is unavailable', async (value) => {
-                  if (value !== '' && value !== _cachedEmail) {
-                    const validatedEmail = await validateEmail(value)
-                    _isValidEmail = validatedEmail
-                    _cachedEmail = value
-                  }
-
-                  return _isValidEmail
-                })
-                .required('Email is required'),
-            }),
-          })
-        ),
-      })
+      return emailValidationSchema(validateEmail)
     case 'Address':
       return addressValidationSchema
     default:

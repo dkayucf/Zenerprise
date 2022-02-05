@@ -1,8 +1,9 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import TextField from '@material-ui/core/TextField'
 import { useFormikContext } from 'formik'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { makeStyles } from '@material-ui/core/styles'
+import { useIsFocusVisible } from '../../../hooks'
 import {
   anyPass,
   filter,
@@ -30,46 +31,69 @@ function toTitleCase(str) {
 }
 
 export default function StateSelect() {
+  const [open, setOpen] = useState(false)
   const classes = useStyles()
   const { values, touched, errors, setFieldValue, setFieldTouched } =
     useFormikContext()
+  const {
+    isFocusVisible,
+    onBlurVisible,
+    ref: focusVisibleRef,
+  } = useIsFocusVisible()
   const inputTouched = touched['state']
   const inputErrors = errors['state']
   const state = values['state']
+
   const onChange = useCallback(
-    (e, state) => setFieldValue('state', state),
+    (e, state) => {
+      if (!state) {
+        setOpen(true)
+      }
+      return setFieldValue('state', state)
+    },
     [setFieldValue]
   )
 
   const hasErrors = inputErrors && inputErrors.length > 0
+
   const onBlur = useCallback(
     () => setFieldTouched('state', true),
     [setFieldTouched]
   )
 
+  const handleOpen = (e) => {
+    if (e.target.value !== state?.label || !isFocusVisible(e)) {
+      setOpen(true)
+    }
+  }
+
   return (
     <Autocomplete
+      open={open}
+      onOpen={handleOpen}
+      onClose={() => setOpen(false)}
       id="state-select"
       name="state"
       value={state}
+      selectOnFocus
       onChange={onChange}
       onBlur={onBlur}
       options={usStates}
       classes={{
         option: classes.option,
       }}
-      filterOptions={(options, { inputValue }) =>
-        filter(
-          compose(
-            anyPass([propEq('label', true), propEq('value', true)]),
-            evolve({
-              label: (label) => startsWith(toLower(inputValue), toLower(label)),
-              value: (value) => startsWith(toLower(inputValue), toLower(value)),
-            })
-          ),
-          options
-        )
-      }
+      // filterOptions={(options, { inputValue }) =>
+      //   filter(
+      //     compose(
+      //       anyPass([propEq('label', true), propEq('value', true)]),
+      //       evolve({
+      //         label: (label) => startsWith(toLower(inputValue), toLower(label)),
+      //         value: (value) => startsWith(toLower(inputValue), toLower(value)),
+      //       })
+      //     ),
+      //     options
+      //   )
+      // }
       autoHighlight
       getOptionLabel={(option) => option.label}
       getOptionSelected={(option, { value }) => option.value === value}
@@ -80,6 +104,7 @@ export default function StateSelect() {
       )}
       renderInput={(params) => (
         <TextField
+          ref={focusVisibleRef}
           {...params}
           error={inputTouched && hasErrors}
           label="State"
