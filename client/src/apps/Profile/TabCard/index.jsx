@@ -11,7 +11,7 @@ import {
   useTheme,
   useMediaQuery,
 } from '@material-ui/core/'
-import PersonalInfoProvider from '../context/personalInfo'
+import ProfileInfoProvider from '../../../contexts/profile'
 import BasicInfo from '../BasicInfo'
 import ContactInfo from '../ContactInfo'
 
@@ -102,10 +102,10 @@ export default function TabCard() {
         </Tabs>
         {!isSmall && <Divider orientation="vertical" />}
         <TabPanel value={value} index={0}>
-          <PersonalInfoProvider>
+          <ProfileInfoProvider>
             <BasicInfo />
             <ContactInfo />
-          </PersonalInfoProvider>
+          </ProfileInfoProvider>
         </TabPanel>
         <TabPanel value={value} index={1}>
           Item Two

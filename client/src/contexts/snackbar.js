@@ -1,5 +1,10 @@
-
-import React, { useContext, createContext, useEffect, useCallback, useState } from "react"
+import React, {
+  useContext,
+  createContext,
+  useEffect,
+  useCallback,
+  useState,
+} from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import PropTypes from 'prop-types'
 import Snackbar from '@material-ui/core/Snackbar'
@@ -11,7 +16,7 @@ const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />
 
 const snackbarContext = createContext({
   // eslint-disable-next-line no-unused-vars
-  handleSnackbar: (message, severity) => {}
+  handleSnackbar: (message, severity) => {},
 })
 
 const useStyles = makeStyles((theme) => ({
@@ -39,9 +44,12 @@ const SnackbarProvider = ({ children }) => {
   }, [snackPack, messageInfo, open])
 
   const handleSnackbar = useCallback((message, severity) => {
-    setSnackPack((prev) => [...prev, { message, key: new Date().getTime(), severity }])
+    setSnackPack((prev) => [
+      ...prev,
+      { message, key: new Date().getTime(), severity },
+    ])
   }, [])
-  
+
   const handleExited = useCallback(() => {
     setMessageInfo(undefined)
   }, [])
@@ -56,26 +64,29 @@ const SnackbarProvider = ({ children }) => {
   return (
     <snackbarContext.Provider value={handleSnackbar}>
       {children}
-      <Snackbar 
-      open={open} 
-      autoHideDuration={3000} 
-      onClose={handleClose} 
-      onExited={handleExited} 
-      key={messageInfo ? messageInfo.key : undefined} 
-      anchorOrigin={{
+      <Snackbar
+        open={open}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        TransitionProps={{
+          onExit: handleExited,
+        }}
+        key={messageInfo ? messageInfo.key : undefined}
+        anchorOrigin={{
           vertical: 'top',
           horizontal: 'center',
-        }} 
+        }}
         action={
-            <IconButton
-              aria-label="close"
-              color="inherit"
-              className={classes.close}
-              onClick={handleClose}
-            >
-              <CloseIcon />
-            </IconButton>
-        }>
+          <IconButton
+            aria-label="close"
+            color="inherit"
+            className={classes.close}
+            onClick={handleClose}
+          >
+            <CloseIcon />
+          </IconButton>
+        }
+      >
         <Alert severity={messageInfo ? messageInfo.severity : undefined}>
           {messageInfo ? messageInfo.message : undefined}
         </Alert>
@@ -85,8 +96,8 @@ const SnackbarProvider = ({ children }) => {
 }
 
 SnackbarProvider.propTypes = {
-    children: PropTypes.node
-  }
-  
+  children: PropTypes.node,
+}
+
 export const useSnackbar = () => useContext(snackbarContext)
 export default SnackbarProvider

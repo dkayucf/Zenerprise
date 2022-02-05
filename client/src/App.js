@@ -3,30 +3,30 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  useLocation
-} from "react-router-dom"
-import ProvideAuth  from './contexts/auth'
+  useLocation,
+} from 'react-router-dom'
+import ProvideAuth from './contexts/auth'
 import { PrivateRoute, ProtectedRoutes } from './routes/protected'
 import { PublicRoutes } from './routes/public'
 import Layout from './common/Layout/'
 
 function App() {
   return (
-    <ProvideAuth>
-      <Router>
+    <Router>
+      <ProvideAuth>
         <Layout>
           <Switch>
             <PrivateRoute path="/auth">
               <ProtectedRoutes />
             </PrivateRoute>
-            <PublicRoutes />           
+            <PublicRoutes />
             <Route path="*">
               <NoMatch />
             </Route>
           </Switch>
         </Layout>
-      </Router>
-    </ProvideAuth>
+      </ProvideAuth>
+    </Router>
   )
 }
 

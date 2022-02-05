@@ -11,18 +11,18 @@ import LoadingButton from '../../../../common/LoadingButton'
 export default function AccordionActions({
   initialValues,
   handleAccordion,
-  children,
+  disableAction,
 }) {
   const { isSubmitting, isValid, resetForm, dirty } = useFormikContext()
   const handleCancel = useCallback(() => {
     handleAccordion()
     resetForm(initialValues)
   }, [initialValues, resetForm, handleAccordion])
+
   return (
     <MuiAccordionAction
       style={{ display: 'flex', justifyContent: 'space-between' }}
     >
-      {children}
       <Box display="flex" ml="auto">
         <Button size="small" onClick={handleCancel}>
           Cancel
@@ -33,7 +33,7 @@ export default function AccordionActions({
           size="small"
           variant="contained"
           color="primary"
-          disabled={!dirty || !isValid}
+          disabled={(!dirty || !isValid) && disableAction}
         >
           Save
         </LoadingButton>
@@ -47,4 +47,5 @@ AccordionActions.propTypes = {
   initialValues: PropTypes.oneOfType([PropTypes.string, PropTypes.object])
     .isRequired,
   handleAccordion: PropTypes.func,
+  disableAction: PropTypes.bool,
 }

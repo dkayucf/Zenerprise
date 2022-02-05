@@ -3,15 +3,11 @@ import MongoStore from 'connect-mongo'
 import Promise from 'bluebird'
 
 const connectToDB = () => {
-  Promise.promisifyAll(mongoose)
-
   const clientP = mongoose
     .connect(process.env.MONGO_URI, {
       keepAlive: true,
       useNewUrlParser: true,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-      useFindAndModify: false
+      useUnifiedTopology: true
     })
     .then(m => m.connection.getClient())
     .catch(e => {

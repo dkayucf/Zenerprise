@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { Box, Typography } from '@material-ui/core'
 import { useAuth } from '../../../contexts/auth'
-import { usePersonalInfo } from '../context/personalInfo'
+import { useProfileInfo } from '../../../contexts/profile'
 import Accordion from '../Accordion'
 import NameForm from './NameForm'
 import PasswordForm from './PasswordForm'
@@ -14,9 +14,9 @@ const initialValues = {
 }
 
 export default function BasicInfo() {
-  const { user } = useAuth()
-  const { updateName, updatePassword } = usePersonalInfo()
-  const { firstName, lastName, fullName } = prop('name', user)
+  const { profile } = useAuth()
+  const { handleUpdateName, handleUpdatePassword } = useProfileInfo()
+  const { firstName, lastName, fullName } = prop('name', profile)
 
   const [expanded, setExpanded] = useState(false)
 
@@ -41,7 +41,7 @@ export default function BasicInfo() {
           initialValues={{ firstName, lastName }}
           handleAccordion={handleAccordion('Name')}
           expanded={expanded === 'Name'}
-          handleSubmit={updateName}
+          handleSubmit={handleUpdateName}
         >
           <NameForm />
         </Accordion>
@@ -52,7 +52,7 @@ export default function BasicInfo() {
           lastAccordion
           handleAccordion={handleAccordion('Password')}
           expanded={expanded === 'Password'}
-          handleSubmit={updatePassword}
+          handleSubmit={handleUpdatePassword}
         >
           <PasswordForm />
         </Accordion>

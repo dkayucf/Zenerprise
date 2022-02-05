@@ -1,17 +1,16 @@
 import React, { useCallback, useState } from 'react'
 import { Box, Typography } from '@material-ui/core'
 import { useAuth } from '../../../contexts/auth'
-import { usePersonalInfo } from '../context/personalInfo'
+import { useProfileInfo } from '../../../contexts/profile'
 import Accordion from '../Accordion'
 import AddressForm from './AddressForm'
 import PhoneForm from './PhoneForm'
 import EmailForm from './EmailForm'
-import { LinkRouter } from '../../../common/RouterLink'
-import { prop, compose, filter, head, propOr } from 'ramda'
+import { prop, compose, head, propOr, find, propEq } from 'ramda'
 
 const PhoneDisplayValue = () => {
-  const { user } = useAuth()
-  const phoneNumbers = prop('phoneNumbers', user)
+  const { profile } = useAuth()
+  const phoneNumbers = prop('phoneNumbers', profile)
 
   if (!phoneNumbers || !phoneNumbers.length) {
     return '--'
@@ -25,14 +24,13 @@ const PhoneDisplayValue = () => {
           {phone.primaryPhone ? ' (Primary Phone)' : ''}
         </Typography>
       </Box>
-      {phoneNumbers.length > 1 ? <LinkRouter to="">More...</LinkRouter> : null}
     </Box>
   ))
 }
 
 const EmailDisplayValue = () => {
-  const { user } = useAuth()
-  const emailAccounts = prop('email', user)
+  const { profile } = useAuth()
+  const emailAccounts = prop('email', profile)
 
   if (!emailAccounts || !emailAccounts.length) {
     return '--'
@@ -48,14 +46,13 @@ const EmailDisplayValue = () => {
           </Typography>
         </Box>
       ) : null}
-      {emailAccounts.length > 1 ? <LinkRouter to="">More...</LinkRouter> : null}
     </Box>
   ))
 }
 
 const AddressDisplayValue = () => {
-  const { user } = useAuth()
-  const addresses = prop('addresses', user)
+  const { profile } = useAuth()
+  const addresses = prop('addresses', profile)
 
   if (!addresses || !addresses.length) {
     return '--'
@@ -92,19 +89,10 @@ const initialAddress = {
 }
 
 export default function ContactInfo() {
-  const { user } = useAuth()
-  const { updateAddress, updateEmail, updatePrimaryPhone } = usePersonalInfo()
-  const primaryPhoneNumber = compose(
-    head,
-    filter((phone) => phone.primaryPhone),
-    propOr([], 'phoneNumbers')
-  )(user)
+  const { profile } = useAuth()
 
-  const email = prop('email', user)
-
-  const hasAddress = user.addresses && user.addresses.length > 0
-  const address = hasAddress ? head(prop('addresses', user)) : initialAddress
-
+  const { handleUpdateAddress, handleUpdateEmail, handleUpdatePrimaryPhone } =
+    useProfileInfo()
   const [expanded, setExpanded] = useState(false)
 
   const handleAccordion = useCallback(
@@ -114,7 +102,14 @@ export default function ContactInfo() {
     []
   )
 
-  const handleAddAction = (initialValues) => (pushFn) => pushFn(initialValues)
+  const primaryPhoneNumber = compose(
+    find(propEq('primaryPhone', true)),
+    propOr([], 'phoneNumbers')
+  )(profile)
+
+  const email = prop('email', profile)
+  const hasAddress = profile?.addresses && profile?.addresses?.length > 0
+  const address = hasAddress ? head(prop('addresses', profile)) : initialAddress
 
   return (
     <Box mt={5}>
@@ -128,7 +123,7 @@ export default function ContactInfo() {
           initialValues={address}
           handleAccordion={handleAccordion('Address')}
           expanded={expanded === 'Address'}
-          handleSubmit={updateAddress}
+          handleSubmit={handleUpdateAddress}
         >
           <AddressForm />
         </Accordion>
@@ -138,7 +133,7 @@ export default function ContactInfo() {
           initialValues={primaryPhoneNumber}
           handleAccordion={handleAccordion('Phone Number')}
           expanded={expanded === 'Phone Number'}
-          handleSubmit={updatePrimaryPhone}
+          handleSubmit={handleUpdatePrimaryPhone}
         >
           <PhoneForm />
         </Accordion>
@@ -146,12 +141,14 @@ export default function ContactInfo() {
           label="Email"
           name="emails"
           displayValue={<EmailDisplayValue />}
-          initialValues={{ emails: email }}
+          initialValues={{
+            emails: email,
+          }}
           lastAccordion
           handleAccordion={handleAccordion('Email')}
           expanded={expanded === 'Email'}
-          handleSubmit={updateEmail}
-          handleAddAction={handleAddAction({ email: '', primaryEmail: false })}
+          handleSubmit={handleUpdateEmail}
+          validateOnChange={false}
         >
           <EmailForm />
         </Accordion>

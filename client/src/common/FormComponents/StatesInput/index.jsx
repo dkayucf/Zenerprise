@@ -23,6 +23,12 @@ const useStyles = makeStyles({
   },
 })
 
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, function (txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+  })
+}
+
 export default function StateSelect() {
   const classes = useStyles()
   const { values, touched, errors, setFieldValue, setFieldTouched } =
@@ -69,7 +75,7 @@ export default function StateSelect() {
       getOptionSelected={(option, { value }) => option.value === value}
       renderOption={(option) => (
         <React.Fragment>
-          {option.label} ({option.value})
+          {toTitleCase(option.label)} ({option.value})
         </React.Fragment>
       )}
       renderInput={(params) => (

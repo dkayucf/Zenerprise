@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { Formik } from 'formik'
 import * as yup from 'yup'
 import { Typography, Divider, Box } from '@material-ui/core'
@@ -10,7 +10,6 @@ import { ButtonRouter } from '../../RouterLink'
 import { fullValidatorForSchema } from '../../FormComponents/helpers'
 
 import { useAuth } from '../../../contexts/auth'
-import { useRouter } from '../../../hooks/useRouter'
 import { test } from 'ramda'
 
 const useStyles = makeStyles((theme) => ({
@@ -54,10 +53,8 @@ const validationSchema = yup.object({
 })
 
 export default function SignIn() {
-  const { push } = useRouter()
   const classes = useStyles()
   const { login } = useAuth()
-  const redirect = useCallback(() => push('/auth/dashboard'), [push])
 
   return (
     <AuthCard logo={<LockOutlinedIcon />} cardHeading="Sign in">
@@ -66,10 +63,7 @@ export default function SignIn() {
           user: '',
           password: '',
         }}
-        onSubmit={useCallback(
-          (values) => login(values, redirect),
-          [login, redirect]
-        )}
+        onSubmit={login}
         validate={fullValidatorForSchema(validationSchema)}
       >
         {({ handleSubmit, values }) => (

@@ -2,7 +2,7 @@ import Promise from 'bluebird'
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
 import httpStatus from 'http-status'
-import APIError from '../helpers/APIError'
+import { APIError } from '../helpers/'
 
 const { Schema } = mongoose
 
@@ -13,7 +13,7 @@ const PhoneNumberSchema = new Schema(
   {
     phone: {
       type: String,
-      required: true,
+      required: [true, 'User must have a phone number'],
       index: true,
       unique: true
     },
@@ -101,7 +101,8 @@ const EmailSchema = new Schema(
   {
     email: {
       type: String,
-      required: true
+      required: [true, 'User must have a username'],
+      unique: true
     },
     primaryEmail: {
       type: Boolean,

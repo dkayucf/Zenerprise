@@ -1,4 +1,6 @@
 **/.classpath
+**/.eslintrc.json
+**/.prettierrc
 **/.dockerignore
 **/.env
 **/.git

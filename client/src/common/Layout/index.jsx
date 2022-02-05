@@ -9,12 +9,12 @@ import ThemeProvider from './Theme/Provider'
 import { useAuth } from '../../contexts/auth'
 
 const Layout = ({ children }) => {
-  const { isAuth } = useAuth()
+  const { user } = useAuth()
 
   return (
     <ThemeProvider>
       <CssBaseline />
-      {isAuth ? (
+      {user?.isAuth ? (
         <ProtectedLayout>{children}</ProtectedLayout>
       ) : (
         <PublicLayout>{children}</PublicLayout>

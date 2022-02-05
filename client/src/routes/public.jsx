@@ -11,13 +11,13 @@ import {
 } from '../Pages/public/Authentication'
 
 export const PublicRoute = ({ children, ...rest }) => {
-  const { isAuth } = useAuth()
+  const { user } = useAuth()
 
   return (
     <Route
       {...rest}
       render={({ location }) =>
-        isAuth ? (
+        user?.isAuth ? (
           <Redirect
             to={{
               pathname: '/auth/dashboard',

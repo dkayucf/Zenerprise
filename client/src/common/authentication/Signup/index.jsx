@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { Formik } from 'formik'
 import * as yup from 'yup'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
@@ -7,14 +7,13 @@ import SignUpForm from './Form'
 import { fullValidatorForSchema } from '../../FormComponents/helpers'
 
 import { useAuth } from '../../../contexts/auth'
-import { useRouter } from '../../../hooks/useRouter'
 
 let _cachedEmail = ''
 let _isValidEmail = false
 let _cachedPhone = ''
 let _isValidPhone = false
 
-const validationSchema = (validateUser) => {
+const validationSchema = (validateEmail, validatePhone) => {
   return yup.object({
     firstName: yup
       .string('Enter your first name')
@@ -25,25 +24,30 @@ const validationSchema = (validateUser) => {
     email: yup
       .string('Enter your email')
       .email('Enter a valid email')
-      .test('Valid Email', 'Email is unavailable', (value) => {
+      .test('Valid Email', 'Email is unavailable', async (value) => {
         if (value !== '' && value !== _cachedEmail) {
-          const validatedEmail = validateUser('email')(value)
+          const validatedEmail = await validateEmail(value)
           _isValidEmail = validatedEmail
           _cachedEmail = value
         }
+
         return _isValidEmail
       })
       .required('Email is required'),
     phone: yup
       .string('Enter your mobile phone number ')
-      .test('Valid Phone Number', 'Phone number is unavailable', (value) => {
-        if (value !== '' && value !== _cachedPhone) {
-          const validatedPhone = validateUser('phone')(value)
-          _isValidPhone = validatedPhone
-          _cachedPhone = value
+      .test(
+        'Valid Phone Number',
+        'Phone number is unavailable',
+        async (value) => {
+          if (value !== '' && value !== _cachedPhone) {
+            const validatedPhone = await validatePhone(value)
+            _isValidPhone = validatedPhone
+            _cachedPhone = value
+          }
+          return _isValidPhone
         }
-        return _isValidPhone
-      })
+      )
       .required('Mobile phone number is required'),
     phoneData: yup.object({
       countryCode: yup.string(),
@@ -75,33 +79,32 @@ const validationSchema = (validateUser) => {
   })
 }
 
+const initialValues = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  phoneData: {
+    countryCode: '',
+    dialCode: '',
+    format: '',
+    name: '',
+  },
+  password: '',
+  confirmPassword: '',
+}
+
 export default function SignUp() {
-  const { push } = useRouter()
-  const { signup, validateUser } = useAuth()
-  const redirect = useCallback(() => push('/auth/dashboard'), [push])
+  const { signup, validateEmail, validatePhone } = useAuth()
 
   return (
     <AuthCard logo={<LockOutlinedIcon />} cardHeading="Sign Up">
       <Formik
-        initialValues={{
-          firstName: '',
-          lastName: '',
-          email: '',
-          phone: '',
-          phoneData: {
-            countryCode: '',
-            dialCode: '',
-            format: '',
-            name: '',
-          },
-          password: '',
-          confirmPassword: '',
-        }}
-        onSubmit={useCallback(
-          (values) => signup(values, redirect),
-          [signup, redirect]
+        initialValues={initialValues}
+        onSubmit={signup}
+        validate={fullValidatorForSchema(
+          validationSchema(validateEmail, validatePhone)
         )}
-        validate={fullValidatorForSchema(validationSchema(validateUser))}
         validateOnChange={false}
       >
         {({ values, handleSubmit, isValid, dirty, setFieldError }) => (

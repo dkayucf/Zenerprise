@@ -15,7 +15,7 @@ import helmet from 'helmet'
 import winstonInstance from './config/winston'
 import publicRoutes from './routes/public'
 import privateRoutes from './routes/private/index'
-import APIError from './helpers/APIError'
+import { isAuth, APIError } from './helpers'
 
 require = require('esm')(module)
 
@@ -106,22 +106,10 @@ if (environment === 'production') {
 
 app.use(session(sess))
 
-const isAuth = (req, res, next) => {
-  if (req.session.isAuth) {
-    next()
-  } else {
-    const err = new APIError(
-      'Unauthorized Request',
-      httpStatus.UNAUTHORIZED,
-      false
-    )
-    next(err)
-  }
-}
-
 // mount all routes on /api path
 app.use('/api', publicRoutes)
 
+//mount all authenticated requests through apix endpoint with isAuth middleware check
 app.use('/apix', isAuth, privateRoutes)
 
 // if error is not an instanceOf APIError, convert it.

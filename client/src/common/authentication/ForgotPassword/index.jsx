@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { Formik } from 'formik'
 import * as yup from 'yup'
 import { Button, Grid } from '@material-ui/core'
@@ -9,7 +9,7 @@ import Input from '../../FormComponents/FormikInput'
 import { LinkRouter } from '../../RouterLink'
 
 import { useAuth } from '../../../contexts/auth'
-import { useRouter } from '../../../hooks/useRouter'
+// import { useRouter } from '../../../hooks/useRouter'
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -29,13 +29,13 @@ const validationSchema = yup.object({
 })
 
 export default function SignUp() {
-  const { push } = useRouter()
+  // const { push } = useRouter()
   const classes = useStyles()
   const { sendPasswordResetEmail } = useAuth()
-  const redirect = useCallback(
-    (email) => push(`/forgot-password?email=${email}`),
-    [push]
-  )
+  // const redirect = useCallback(
+  //   (email) => push(`/forgot-password?email=${email}`),
+  //   [push]
+  // )
 
   return (
     <AuthCard logo={<LockOutlinedIcon />} cardHeading="Forgot Password">
@@ -43,10 +43,7 @@ export default function SignUp() {
         initialValues={{
           email: '',
         }}
-        onSubmit={useCallback(
-          (values) => sendPasswordResetEmail(values, redirect),
-          [sendPasswordResetEmail, redirect]
-        )}
+        onSubmit={sendPasswordResetEmail}
         validationSchema={validationSchema}
       >
         {({ handleSubmit }) => {

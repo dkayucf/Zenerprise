@@ -14,7 +14,10 @@ import {
 } from '@material-ui/core'
 import ChevronRightIcon from '@material-ui/icons/ChevronRight'
 import GenericForm from '../../../common/FormComponents/GenericForm'
+import { countries } from '../../../common/FormComponents/CountryInput/'
+import { useAuth } from '../../../contexts/auth'
 import ActionButtons from './ActionButtons'
+import { addressValidationSchema } from '../ValidationSchemas'
 
 const Accordion = styled(MuiAccordion)`
   ${({ theme, $lastAccordion }) => `
@@ -55,7 +58,10 @@ const AccordionSummary = styled(MuiAccordionSummary)`
   }
 `
 
-const getValidationSchema = (label) => {
+let _cachedEmail = ''
+let _isValidEmail = false
+
+const getValidationSchema = (label, validateEmail) => {
   switch (label) {
     case 'Name':
       return yup.object({
@@ -116,35 +122,29 @@ const getValidationSchema = (label) => {
       return yup.object().shape({
         emails: yup.array().of(
           yup.object({
-            email: yup
-              .string('Enter your email')
-              .email('Enter a valid email')
-              .required('Email is required'),
             primaryEmail: yup.boolean(),
+            email: yup.string().when('primaryEmail', {
+              is: true,
+              then: yup.string(),
+              otherwise: yup
+                .string('Enter your email')
+                .email('Enter a valid email')
+                .test('Valid Email', 'Email is unavailable', async (value) => {
+                  if (value !== '' && value !== _cachedEmail) {
+                    const validatedEmail = await validateEmail(value)
+                    _isValidEmail = validatedEmail
+                    _cachedEmail = value
+                  }
+
+                  return _isValidEmail
+                })
+                .required('Email is required'),
+            }),
           })
         ),
       })
     case 'Address':
-      return yup.object({
-        addressLineOne: yup.string().required('Address One is required'),
-        addressLineTwo: yup.string(),
-        city: yup.string().required('City is required'),
-        postalCode: yup.string().required('Postal Code is required'),
-        state: yup
-          .object({
-            value: yup.string(),
-            label: yup.string(),
-          })
-          .nullable()
-          .required('State is required'),
-        country: yup
-          .object({
-            code: yup.string(),
-            label: yup.string(),
-          })
-          .nullable()
-          .required('Country is required'),
-      })
+      return addressValidationSchema
     default:
       break
   }
@@ -160,16 +160,22 @@ export default function AccordionForm({
   handleAccordion,
   handleSubmit,
   expanded,
-  handleAddAction,
+  validateOnChange,
 }) {
+  const { validateEmail } = useAuth()
   return (
     <GenericForm
       initialValues={initialValues}
-      validationSchema={getValidationSchema(label)}
+      validationSchema={getValidationSchema(label, validateEmail)}
+      schemaContext={{
+        countries,
+      }}
       onSubmit={handleSubmit}
+      enableReinitialize
+      validateOnChange={validateOnChange}
     >
       <FieldArray name={name}>
-        {({ remove, push }) => (
+        {() => (
           <Accordion
             $lastAccordion={lastAccordion}
             expanded={expanded}
@@ -202,20 +208,8 @@ export default function AccordionForm({
             <ActionButtons
               initialValues={initialValues}
               handleAccordion={handleAccordion}
-            >
-              {handleAddAction ? (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleAddAction(push)
-                  }}
-                >
-                  + Add
-                </Button>
-              ) : null}
-            </ActionButtons>
+              disableAction={validateOnChange}
+            />
           </Accordion>
         )}
       </FieldArray>
@@ -235,10 +229,11 @@ AccordionForm.propTypes = {
   expanded: PropTypes.bool.isRequired,
   handleAccordion: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
-  handleAddAction: PropTypes.func,
+  validateOnChange: PropTypes.bool,
 }
 
 AccordionForm.defaultProps = {
   name: '',
   lastAccordion: false,
+  validateOnChange: true,
 }

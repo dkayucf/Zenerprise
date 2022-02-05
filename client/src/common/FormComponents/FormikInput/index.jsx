@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { useFormikContext } from 'formik'
+
 import {
   OutlinedInput,
   FormControl,
@@ -18,27 +19,48 @@ export default function FormikInput({
   validateOnChange,
   ...rest
 }) {
-  const { values, touched, errors, setFieldTouched, setFieldValue } =
-    useFormikContext()
+  const {
+    values,
+    touched,
+    errors,
+    setFieldTouched,
+    setFieldValue,
+    initialValues,
+  } = useFormikContext()
 
   const fieldName = split('.', name)
   const inputTouched = path(fieldName, touched)
   const inputErrors = path(fieldName, errors)
   const inputValue = path(fieldName, values)
   const hasErrors = inputErrors && inputErrors.length > 0
+  const initialValue = path(fieldName, initialValues)
 
-  const handleChange = (e) => {
-    if (validateOnChange) {
-      setFieldValue(name, e.target.value, true)
-    } else {
-      setFieldValue(name, e.target.value, false)
-    }
-  }
+  const handleChange = useCallback(
+    (e) => {
+      if (validateOnChange) {
+        setFieldValue(name, e.target.value, true)
+      } else {
+        setFieldValue(name, e.target.value, false)
+      }
+    },
+    [setFieldValue, validateOnChange, name]
+  )
+
+  const handleBlur = useCallback(
+    (e) => {
+      if (e.target.value !== initialValue) {
+        setFieldTouched(name, true, true)
+      } else {
+        setFieldTouched(name, true, false)
+      }
+    },
+    [setFieldTouched, initialValue, name]
+  )
 
   return (
     <FormControl
       variant="outlined"
-      error={inputTouched && hasErrors}
+      error={(inputValue !== '' || inputTouched) && hasErrors ? true : false}
       fullWidth
       margin="normal"
     >
@@ -53,10 +75,10 @@ export default function FormikInput({
         value={inputValue}
         name={name}
         onChange={handleChange}
-        onBlur={() => setFieldTouched(name, true)}
+        onBlur={handleBlur}
         {...rest}
       />
-      {inputTouched &&
+      {(inputValue !== '' || inputTouched) &&
         hasErrors &&
         inputErrors.map((error, i) => (
           <FormHelperText key={i} id={`${name}-error-text`}>

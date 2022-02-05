@@ -10,7 +10,6 @@ import Input from '../../FormComponents/FormikInput'
 import LoadingButton from '../../LoadingButton'
 import { useAuth } from '../../../contexts/auth'
 import { LinkRouter } from '../../RouterLink'
-import { useRouter } from '../../../hooks/useRouter'
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -48,14 +47,11 @@ export default function SignUpForm({
   const classes = useStyles()
   const {
     signUpStatus,
-    resetLoginRequest,
-    resetSignupRequest,
+    validateEmailRequest,
+    validatePhoneRequest,
     resetEmailValidate,
     resetPhoneValidate,
-    useResource,
   } = useAuth()
-  const { isLoading } = signUpStatus
-  const { location } = useRouter()
 
   useEffect(() => {
     resetEmailValidate()
@@ -66,23 +62,6 @@ export default function SignUpForm({
     resetPhoneValidate()
     setFieldError('phone', '')
   }, [values.phone, resetPhoneValidate, setFieldError])
-
-  useEffect(() => {
-    resetLoginRequest()
-    resetSignupRequest()
-  }, [values, resetLoginRequest, resetSignupRequest, location])
-
-  const {
-    isLoading: emailValidationLoading,
-    isSuccessful,
-    response,
-  } = useResource('email')
-
-  const {
-    isLoading: phoneValidationLoading,
-    isSuccessful: phoneValidationSuccessful,
-    response: phoneValidationResponse,
-  } = useResource('phone')
 
   return (
     <form className={classes.form} onSubmit={handleSubmit}>
@@ -116,9 +95,9 @@ export default function SignUpForm({
             endAdornment={
               <InputAdornment position="end">
                 <InputIcon
-                  isLoading={emailValidationLoading}
-                  isValid={response.isValidUser}
-                  isSuccessful={isSuccessful}
+                  isLoading={validateEmailRequest.status === 'pending'}
+                  isValid={validateEmailRequest?.value?.isValidUser}
+                  isSuccessful={validateEmailRequest.status === 'success'}
                 />
               </InputAdornment>
             }
@@ -131,9 +110,9 @@ export default function SignUpForm({
               style={{ position: 'absolute', right: '15px', bottom: '36px' }}
             >
               <InputIcon
-                isLoading={phoneValidationLoading}
-                isValid={phoneValidationResponse.isValidUser}
-                isSuccessful={phoneValidationSuccessful}
+                isLoading={validatePhoneRequest.status === 'pending'}
+                isValid={validatePhoneRequest?.value?.isValidUser}
+                isSuccessful={validatePhoneRequest.status === 'success'}
               />
             </InputAdornment>
           </PhoneNumber>
@@ -156,7 +135,7 @@ export default function SignUpForm({
           <Box mt={3} mb={1}>
             <LoadingButton
               disabled={!isValid || !dirty}
-              isPending={isLoading}
+              isPending={signUpStatus === 'pending'}
               type="submit"
               fullWidth
               variant="contained"

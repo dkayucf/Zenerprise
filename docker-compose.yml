@@ -5,18 +5,8 @@ services:
     restart: always
     build:
       context: ./server
-      dockerfile: Dockerfile.dev
-    env_file: ./server/config/env/dev.env
-    # volumes allow sharing of data in run-time between host and container
-    volumes:
-      # don't overwrite this folder in container with the local one
-      - /app/node_modules
-      # map current local directory to the /app inside the container
-      #This is a must for development in order to update our container whenever a change to the source code is made. Without this, you would have to rebuild the image each time you make a change to source code.
+      dockerfile: Dockerfile
 
-      - ./server:/app
-    environment:
-      - CHOKIDAR_USEPOLLING=true
     depends_on:
       - mongodb
     networks:
@@ -37,13 +27,7 @@ services:
     restart: always
     build:
       context: ./client
-      dockerfile: Dockerfile.dev
-    container_name: zenerprise_frontend
-    volumes:
-      - ./client:/app
-      - /app/node_modules
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+      dockerfile: Dockerfile
     depends_on:
       - zenerprise-api
     networks:
@@ -56,7 +40,7 @@ services:
       - client
     build:
       context: ./nginx
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     ports:
       - 80:80
     networks:

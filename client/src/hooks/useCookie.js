@@ -1,28 +1,27 @@
 import { useCallback, useMemo } from 'react'
-import * as Cookies from "js-cookie"
+import * as Cookies from 'js-cookie'
 
 const defaultCookie = {
-  isAuth: false,
-  user: null,
-  routes: []
+  user: {
+    isAuth: false,
+    routes: [],
+  },
 }
 
 // Hook
 export function useCookie() {
-  
-
   const removeCookie = useCallback(() => {
-    Cookies.remove("session")
-    Cookies.set("session", defaultCookie)
+    Cookies.remove('session')
+    Cookies.set('session', defaultCookie)
   }, [])
 
-  const setSessionCookie = useCallback(session => {
-    Cookies.remove("session")
-    Cookies.set("session", session)
+  const setSessionCookie = useCallback((session) => {
+    Cookies.remove('session')
+    Cookies.set('session', session)
   }, [])
 
   const getSessionCookie = useCallback(() => {
-    const sessionCookie = Cookies.get("session")
+    const sessionCookie = Cookies.get('session')
 
     if (sessionCookie === undefined) {
       return defaultCookie
@@ -30,12 +29,14 @@ export function useCookie() {
       return JSON.parse(sessionCookie)
     }
   }, [])
- 
 
-  return useMemo(() => ({
-    sessionCookie: getSessionCookie(),
-    getSessionCookie,
-    setSessionCookie,
-    removeCookie
-  }), [getSessionCookie, setSessionCookie, removeCookie])
+  return useMemo(
+    () => ({
+      sessionCookie: getSessionCookie(),
+      getSessionCookie,
+      setSessionCookie,
+      removeCookie,
+    }),
+    [getSessionCookie, setSessionCookie, removeCookie]
+  )
 }

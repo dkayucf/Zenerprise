@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { Formik, Form } from 'formik'
 import { fullValidatorForSchema } from '../helpers'
@@ -8,16 +8,28 @@ export default function GenericForm({
   initialValues,
   onSubmit,
   validationSchema,
+  schemaContext,
+  ...rest
 }) {
+  const handleOnSubmit = useCallback(
+    (values, actions) =>
+      onSubmit(
+        values,
+        (resetValues) => actions.resetForm({ values: resetValues || values }),
+        actions,
+        initialValues
+      ),
+    [onSubmit, initialValues]
+  )
+
   return (
     <Formik
       initialValues={initialValues}
-      onSubmit={(values, actions) =>
-        onSubmit(values, (resetValues) =>
-          actions.resetForm({ values: resetValues || values })
-        )
-      }
-      validate={fullValidatorForSchema(validationSchema)}
+      onSubmit={handleOnSubmit}
+      validate={fullValidatorForSchema(validationSchema, {
+        context: schemaContext,
+      })}
+      {...rest}
     >
       <Form>{children}</Form>
     </Formik>
@@ -30,4 +42,5 @@ GenericForm.propTypes = {
     .isRequired,
   onSubmit: PropTypes.func.isRequired,
   validationSchema: PropTypes.object.isRequired,
+  schemaContext: PropTypes.object,
 }

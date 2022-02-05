@@ -3,15 +3,6 @@ import { useFormikContext } from 'formik'
 import TextField from '@material-ui/core/TextField'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { makeStyles } from '@material-ui/core/styles'
-import {
-  anyPass,
-  filter,
-  evolve,
-  compose,
-  propEq,
-  startsWith,
-  toLower,
-} from 'ramda'
 
 // ISO 3166-1 alpha-2
 // ⚠️ No support for IE 11
@@ -61,32 +52,28 @@ export default function CountrySelect() {
       name="country"
       value={country}
       getOptionLabel={(option) => option.label}
-      getOptionSelected={(option, value) => option.code === value.code}
+      getOptionSelected={(option, value) => {
+        console.log(option)
+        return option.code === value.code
+      }}
       onChange={onChange}
+      selectOnFocus
       onBlur={onBlur}
       options={countries}
-      filterOptions={(options, { inputValue }) =>
-        filter(
-          compose(
-            anyPass([propEq('label', true), propEq('code', true)]),
-            evolve({
-              label: (label) => startsWith(toLower(inputValue), toLower(label)),
-              code: (code) => startsWith(toLower(inputValue), toLower(code)),
-            })
-          ),
-          options
-        )
-      }
       classes={{
         option: classes.option,
       }}
       autoHighlight
-      renderOption={(option) => (
-        <React.Fragment>
-          <span>{countryToFlag(option.code)}</span>
-          {option.label}
-        </React.Fragment>
-      )}
+      renderOption={(option) =>
+        option.code ? (
+          <>
+            <span>{countryToFlag(option.code)}&nbsp;</span>
+            {option.label}
+          </>
+        ) : (
+          option.label
+        )
+      }
       renderInput={(params) => (
         <TextField
           {...params}

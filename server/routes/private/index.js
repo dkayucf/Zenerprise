@@ -10,10 +10,8 @@ import {
   head
 } from 'ramda'
 import httpStatus from 'http-status'
-import testRoutes from './test'
 import usersRoutes from './user'
-import inventoryRoutes from './inventory'
-import APIError from '../../helpers/APIError'
+import { APIError } from '../../helpers/'
 
 const router = express.Router()
 
@@ -45,10 +43,8 @@ const checkAllowedRole = routeId => (req, res, next) => {
   }
 }
 
-router.use('/test', testRoutes)
-
 router.use('/users', usersRoutes)
 
-router.use('/inventory', checkAllowedRole('inventory'), inventoryRoutes)
+// router.use('/inventory', checkAllowedRole('inventory'), inventoryRoutes)
 
 export default router

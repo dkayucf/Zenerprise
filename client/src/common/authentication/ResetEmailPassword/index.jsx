@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import * as yup from 'yup'
 import { Button, Grid } from '@material-ui/core'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
@@ -7,7 +7,7 @@ import AuthCard from '../AuthCard'
 import Password from '../../FormComponents/Password'
 import GenericForm from '../../FormComponents/GenericForm'
 
-// import { useAuth } from '../../../contexts/provideAuth'
+import { useAuth } from '../../../contexts/auth'
 // import { useRouter } from '../../../hooks/useRouter'
 
 const useStyles = makeStyles((theme) => ({
@@ -47,7 +47,7 @@ const initialValues = {
 export default function ResetPasswordEmail() {
   // const { push } = useRouter()
   const classes = useStyles()
-  // const { sendPasswordResetEmail } = useAuth()
+  const { sendPasswordResetEmail } = useAuth()
   // const redirect = useCallback(
   //   (email) => push(`/forgot-password?email=${email}`),
   //   [push]
@@ -57,7 +57,7 @@ export default function ResetPasswordEmail() {
     <AuthCard logo={<LockOutlinedIcon />} cardHeading="Reset Password">
       <GenericForm
         initialValues={initialValues}
-        onSubmit={useCallback((values) => console.log(values), [])}
+        onSubmit={sendPasswordResetEmail}
         validationSchema={validationSchema}
       >
         <Grid container>

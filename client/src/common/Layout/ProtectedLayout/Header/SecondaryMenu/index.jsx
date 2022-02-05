@@ -12,7 +12,7 @@ import { withStyles, makeStyles } from '@material-ui/core/styles'
 import { useHeader } from '../../../../../contexts/header'
 import { useAuth } from '../../../../../contexts/auth'
 import { useRouter } from '../../../../../hooks/useRouter'
-import { compose, prop, filter, pluck, head } from 'ramda'
+import { compose, propOr, find, propEq, prop } from 'ramda'
 
 const StyledMenu = withStyles(({ spacing }) => ({
   list: {
@@ -64,16 +64,14 @@ const SecondaryMenu = () => {
   const { push } = useRouter()
   const { anchorEl, menuId, isMenuOpen, handleMenuClose } = useHeader()
   const classes = useStyles()
-  const { logout, user } = useAuth()
-  const redirect = useCallback(() => push('/auth/dashboard'), [push])
-  const handleLogout = useCallback(() => logout(redirect), [logout, redirect])
+  const { logout, profile } = useAuth()
   const handleProfile = useCallback(() => push('/auth/profile'), [push])
+
   const primaryEmail = compose(
-    head,
-    pluck('email'),
-    filter((email) => email.primaryEmail),
-    prop('email')
-  )(user)
+    prop('email'),
+    find(propEq('primaryEmail', true)),
+    propOr([], 'email')
+  )(profile)
 
   return (
     <StyledMenu
@@ -87,19 +85,19 @@ const SecondaryMenu = () => {
     >
       <StyledMenuItem onClick={handleProfile}>
         <ListItemIcon>
-          <Avatar className={classes.avatar}>{user.initials}</Avatar>
+          <Avatar className={classes.avatar}>{profile?.name?.initials}</Avatar>
         </ListItemIcon>
         <Box ml={1}>
           <ListItemText
-            primary={user.name.fullName || 'Hello'}
+            primary={profile?.name?.fullName || 'Hello'}
             primaryTypographyProps={{ style: { fontWeight: 700 } }}
           />
-          <ListItemText primary={primaryEmail} />
+          <ListItemText primary={primaryEmail || '-'} />
         </Box>
       </StyledMenuItem>
       <Divider />
       <StyledMenuItem>My account</StyledMenuItem>
-      <StyledMenuItem onClick={handleLogout}>Logout</StyledMenuItem>
+      <StyledMenuItem onClick={logout}>Logout</StyledMenuItem>
     </StyledMenu>
   )
 }

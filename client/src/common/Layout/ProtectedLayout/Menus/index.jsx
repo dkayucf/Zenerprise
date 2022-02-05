@@ -11,7 +11,8 @@ import { useAuth } from '../../../../contexts/auth'
 
 const Menu = () => {
   const { drawerOpen, drawerFocusOpen } = useHeader()
-  const { routes } = useAuth()
+  const { user } = useAuth()
+  const routes = user.routes
   const menuToggleState = map((x) => !x, indexBy(prop('id'), routes))
 
   const [state, setState] = useState(menuToggleState)

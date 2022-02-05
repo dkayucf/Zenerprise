@@ -26,8 +26,6 @@ const useStyles = makeStyles((theme) => ({
 export default function AuthCard({ children, logo, cardHeading }) {
   const classes = useStyles()
   const { loginStatus, signUpStatus } = useAuth()
-  const { hasError: loginError } = loginStatus
-  const { hasError: signupError } = signUpStatus
 
   return (
     <Container className={classes.container} maxWidth="xs">
@@ -39,7 +37,7 @@ export default function AuthCard({ children, logo, cardHeading }) {
               {cardHeading}
             </Typography>
           </Box>
-          {loginError || signupError ? (
+          {loginStatus === 'error' || signUpStatus === 'error' ? (
             <Box mt={2}>
               <Alert
                 icon={<WarningOutlinedIcon fontSize="inherit" />}

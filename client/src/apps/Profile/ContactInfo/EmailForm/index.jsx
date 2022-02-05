@@ -1,54 +1,69 @@
-import React from 'react'
-import { Grid, FormControlLabel, Box, Checkbox } from '@material-ui/core'
+import React, { useEffect } from 'react'
+import { Grid, Box, InputAdornment, CircularProgress } from '@material-ui/core'
+import CheckIcon from '@material-ui/icons/Check'
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline'
+import { makeStyles } from '@material-ui/core/styles'
 import { useFormikContext } from 'formik'
+import { useAuth } from '../../../../contexts/auth'
 import Input from '../../../../common/FormComponents/FormikInput'
-import { findIndex, path, prop, propEq } from 'ramda'
+
+const useStyles = makeStyles((theme) => ({
+  success: {
+    color: theme.palette.success.main,
+  },
+}))
+
+// eslint-disable-next-line react/prop-types
+const InputIcon = ({ isLoading, isSuccessful, isValid }) => {
+  const classes = useStyles()
+  if (isLoading) {
+    return <CircularProgress size={20} />
+  }
+  if (isSuccessful) {
+    if (isValid) {
+      return <CheckIcon className={classes.success} />
+    } else {
+      return <ErrorOutlineIcon color="error" />
+    }
+  }
+  return null
+}
 
 export default function EmailForm() {
-  const { values, setFieldValue } = useFormikContext()
+  const { resetEmailValidate, validateEmailRequest } = useAuth()
+  const { values, setFieldError } = useFormikContext()
 
-  const primaryEmailChange = (name) => (e) => {
-    const currentPrimaryEmailIndex = findIndex(propEq('primaryEmail', true))(
-      prop('emails', values)
-    )
-    setFieldValue(
-      `emails.${currentPrimaryEmailIndex}.primaryEmail`,
-      false,
-      false
-    )
-    setFieldValue(name, e.target.checked, false)
-  }
+  useEffect(() => {
+    resetEmailValidate()
+    setFieldError('emails', '')
+  }, [values.emails, resetEmailValidate, setFieldError])
 
   return (
     <Grid container>
       {values.emails.length > 0 &&
         values.emails.map((email, index) => (
-          <Box display="flex" width="100%" key={index}>
-            <Grid item xs={8}>
+          <Box display="flex" width="100%" key={index} mb={2}>
+            <Grid item xs={12}>
               <Input
                 name={`emails.${index}.email`}
-                label="Email"
+                label={email.primaryEmail ? 'Primary Email' : 'Backup Email'}
                 required
                 autoComplete="email"
                 type="email"
-              />
-            </Grid>
-            <Grid
-              item
-              xs={4}
-              style={{ display: 'flex', justifyContent: 'flex-end' }}
-            >
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={path(['emails', index, 'primaryEmail'], values)}
-                    onChange={primaryEmailChange(
-                      `emails.${index}.primaryEmail`
-                    )}
-                    name={`emails.${index}.primaryEmail`}
-                  />
+                disabled={email.primaryEmail}
+                readOnly={email.primaryEmail}
+                validateOnChange={false}
+                endAdornment={
+                  !email.primaryEmail ? (
+                    <InputAdornment position="end">
+                      <InputIcon
+                        isLoading={validateEmailRequest.status === 'pending'}
+                        isValid={validateEmailRequest?.value?.isValidUser}
+                        isSuccessful={validateEmailRequest.status === 'success'}
+                      />
+                    </InputAdornment>
+                  ) : null
                 }
-                label="Primary Email"
               />
             </Grid>
           </Box>

@@ -6,13 +6,13 @@ import { Dashboard, Profile } from '../Pages/protected/'
 import { propOr } from 'ramda'
 
 export const PrivateRoute = ({ children, ...rest }) => {
-  const { isAuth } = useAuth()
+  const { user } = useAuth()
 
   return (
     <Route
       {...rest}
       render={({ location }) =>
-        isAuth ? (
+        user?.isAuth ? (
           children
         ) : (
           <Redirect
@@ -32,9 +32,13 @@ PrivateRoute.propTypes = {
 }
 
 export const ProtectedRoutes = () => {
-  const { routes } = useAuth()
+  const { user, profile } = useAuth()
+  const routes = user?.routes
   let { path } = useRouteMatch()
 
+  if (!profile) {
+    return null
+  }
   return (
     <Switch>
       <Route exact path={`${path}`}>

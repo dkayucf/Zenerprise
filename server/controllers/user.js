@@ -1,9 +1,21 @@
 /* eslint-disable no-underscore-dangle */
 import httpStatus from 'http-status'
 import bcrypt from 'bcrypt'
-import { head, toUpper, pathOr, path, props } from 'ramda'
+import {
+  head,
+  toUpper,
+  pathOr,
+  path,
+  props,
+  filter,
+  compose,
+  evolve,
+  map,
+  assoc,
+  pick
+} from 'ramda'
 import User from '../models/user'
-import APIError from '../helpers/APIError'
+import { APIError } from '../helpers/'
 import { getConfigPromise } from '../config/getConfigs'
 import { transformRoutesByRole } from '../transforms/frontend-routes'
 
@@ -17,161 +29,152 @@ const getInitials = ({ firstName, lastName }) =>
     ? `${toUpper(head(firstName))}${toUpper(head(lastName))}`
     : ''
 
-const setReturnObject = (user, userRoutes) => {
-  return {
-    user: {
-      id: user._id,
-      name: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        fullName: getFullName(user)
-      },
-      initials: getInitials(user),
-      email: user.emails,
-      addresses: user.addresses || [],
-      phoneNumbers: user.phoneNumbers
+const setupProfileInfo = (user, req) => {
+  const profile = {
+    name: {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      fullName: getFullName(user),
+      initials: getInitials(user)
     },
-    isAuth: true,
-    routes: transformRoutesByRole(user.role, userRoutes)
+    email: user.emails,
+    addresses: user.addresses || [],
+    phoneNumbers: user.phoneNumbers
   }
+  req.session.user.profile = profile
+  return profile
 }
 
-function validateUser(req, res, next) {
+const setupSessionUser = (user, userRoutes, req) => {
+  const sessionUser = {
+    id: user._id,
+    isAuth: true,
+    routes: transformRoutesByRole(user.role, userRoutes),
+    role: user.role
+  }
+  req.session.user = sessionUser
+  setupProfileInfo(user, req)
+  return pick(['id', 'isAuth', 'routes'], sessionUser)
+}
+
+const validateUser = async (req, res, next) => {
   const email = pathOr('', ['body', 'email'], req)
   const phoneNumber = pathOr('', ['body', 'phone'], req)
 
-  User.findOne({
-    $or: [{ 'emails.email': email }, { 'phoneNumbers.phone': phoneNumber }]
-  })
-    .then(foundUser => {
-      if (foundUser) {
-        res.json({ isValidUser: false })
-      } else {
-        res.json({ isValidUser: true })
-      }
-      return foundUser
+  try {
+    const foundUser = await User.findOne({
+      $or: [{ 'emails.email': email }, { 'phoneNumbers.phone': phoneNumber }]
     })
-    .catch(e => {
-      const err = new APIError(
-        `Internal Server Error ${e}`,
-        httpStatus.INTERNAL_SERVER_ERROR
-      )
-      next(err)
-    })
+    if (foundUser) {
+      res.json({ isValidUser: false })
+    } else {
+      res.json({ isValidUser: true })
+    }
+    return foundUser
+  } catch (error) {}
 }
 
-function register(req, res, next) {
-  Promise.all([
-    getConfigPromise('frontend-routes'),
-    User.findOneAsync({ email: req.body.email })
-  ])
-    .then(([routes, foundUser]) => {
-      if (foundUser !== null) {
-        const err = new APIError(
-          'User already exists',
-          httpStatus.CONFLICT,
-          true
-        )
+const register = async (req, res, next) => {
+  try {
+    const [routes, foundUser] = await Promise.all([
+      getConfigPromise('frontend-routes'),
+      User.findOne({ emails: { $elemMatch: { email: req.body.user } } })
+    ])
 
-        throw err
-      }
-      req.session.userRoutes = routes
-      const user = new User({
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        phoneNumbers: [
-          {
-            phone: req.body.phone,
-            phoneData: req.body.phoneData,
-            phoneFormatted: req.body.phoneFormatted
-          }
-        ],
-        emails: [
-          {
-            email: req.body.email
-          }
-        ],
-        password: req.body.password
-      })
+    if (foundUser !== null) {
+      const err = new APIError('User already exists', httpStatus.CONFLICT, true)
+      return next(err)
+    }
 
-      return user.saveAsync()
+    const user = new User({
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      phoneNumbers: [
+        {
+          phone: req.body.phone,
+          phoneData: req.body.phoneData,
+          phoneFormatted: req.body.phoneFormatted
+        }
+      ],
+      emails: [
+        {
+          email: req.body.email
+        }
+      ],
+      password: req.body.password
     })
-    .then(savedUser => {
-      req.session.userId = savedUser._id
-      req.session.isAuth = true
-      req.session.userRole = savedUser.role
 
-      const returnObj = setReturnObject(savedUser, req.session.userRoutes)
-      res.json(returnObj)
-      return savedUser
-    })
-    .catch(e => {
-      const err = new APIError(
-        `Internal Server Error ${e}`,
-        httpStatus.INTERNAL_SERVER_ERROR
-      )
-      next(err)
-    })
-}
+    const savedUser = await user.save()
 
-function login(req, res, next) {
-  Promise.all([
-    getConfigPromise('frontend-routes'),
-    User.findOneAsync(
-      {
-        $or: [
-          { 'emails.email': req.body.user, 'emails.primaryEmail': true },
-          {
-            'phoneNumbers.phone': req.body.user,
-            'phoneNumbers.primaryPhone': true
-          }
-        ]
-      },
-      '+password'
+    if (!savedUser || !savedUser._id) {
+      const err = new APIError('Issue saving user', httpStatus.CONFLICT, true)
+      return next(err)
+    }
+
+    const returnObj = setupSessionUser(savedUser, routes, req)
+
+    res.json(returnObj)
+    return savedUser
+  } catch (error) {
+    const err = new APIError(
+      `Internal Server Error ${error}`,
+      httpStatus.INTERNAL_SERVER_ERROR
     )
-  ])
-    .then(([routes, user]) => {
-      if (!user) {
-        const err = new APIError(
-          'Incorrect Login Information',
-          httpStatus.UNAUTHORIZED,
-          false
-        )
-        return next(err)
-      }
-      req.routes = routes
-      req.user = user
-
-      return bcrypt.compare(req.body.password, user.password)
-    })
-    .then(isMatch => {
-      if (!isMatch) {
-        const err = new APIError(
-          'Incorrect Login Information',
-          httpStatus.UNAUTHORIZED,
-          false
-        )
-        return next(err)
-      }
-
-      req.session.userId = req.user._id
-      req.session.isAuth = true
-      req.session.userRoutes = req.routes
-      req.session.userRole = req.user.role
-
-      const returnObj = setReturnObject(req.user, req.routes)
-      return res.json(returnObj)
-    })
-    .catch(e => {
-      const err = new APIError(
-        `Internal Server Error ${e}`,
-        httpStatus.INTERNAL_SERVER_ERROR
-      )
-      next(err)
-    })
+    next(err)
+  }
 }
 
-function logout(req, res, next) {
+const login = async (req, res, next) => {
+  try {
+    const [routes, user] = await Promise.all([
+      getConfigPromise('frontend-routes'),
+      User.findOne(
+        {
+          $or: [
+            { 'emails.email': req.body.user, 'emails.primaryEmail': true },
+            {
+              'phoneNumbers.phone': req.body.user,
+              'phoneNumbers.primaryPhone': true
+            }
+          ]
+        },
+        '+password'
+      )
+    ])
+
+    if (!user) {
+      const err = new APIError(
+        'Incorrect Login Information',
+        httpStatus.UNAUTHORIZED,
+        false
+      )
+      return next(err)
+    }
+
+    const isMatch = await bcrypt.compare(req.body.password, user.password)
+
+    if (!isMatch) {
+      const err = new APIError(
+        'Incorrect Login Information',
+        httpStatus.UNAUTHORIZED,
+        false
+      )
+      return next(err)
+    }
+
+    const returnObj = setupSessionUser(user, routes, req)
+    res.json(returnObj)
+    return returnObj
+  } catch (error) {
+    const err = new APIError(
+      `Internal Server Error ${error}`,
+      httpStatus.INTERNAL_SERVER_ERROR
+    )
+    next(err)
+  }
+}
+
+const logout = (req, res, next) => {
   req.session.destroy(e => {
     if (e) {
       const err = new APIError(
@@ -182,12 +185,14 @@ function logout(req, res, next) {
     }
     res.json({ success: true })
   })
+  return
 }
 
 const SignJWT = id =>
   jwt.sign({ _id: id }, process.env.JWT_SECRET, { expiresIn: '20m' })
 
-function forgotPassword(req, res, next) {
+const forgotPassword = async (req, res, next) => {
+  console.log('TEST----------------------')
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -198,141 +203,187 @@ function forgotPassword(req, res, next) {
       pass: process.env.EMAIL_PASSWORD
     }
   })
-
-  User.findOne({ email: req.body.email })
-    .then(foundUser => {
-      if (!foundUser) {
-        return res
-          .status(400)
-          .json({ message: 'User with this email does not exist.' })
-      }
-      return User.findOneAndUpdate(
-        { _id: foundUser._id },
-        { $set: { resetToken: SignJWT(foundUser._id) } },
-        { new: true, useFindAndModify: false }
+  try {
+    const foundUser = await User.findOne({ email: req.body.email })
+    if (!foundUser) {
+      const err = new APIError(
+        'Incorrect Login Information',
+        httpStatus.UNAUTHORIZED,
+        false
       )
-    })
-    .then(updatedUser => {
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: updatedUser.email,
-        subject: 'Password reset link for Zenerprise',
-        html: `
-        <h2>Please click on the link below to reset your password for your account at Zenerprise<h2>
-        <h3>If you did NOT make this password change request then please disregard this email.<h3>
-        <a href="http://localhost:3000/reset-password?token=${updatedUser.resetToken}">Reset Link</a> 
-      `
-      } //TODO: REPLACE THIS CONFIG CLIENT URL
-      return transporter.sendMail(mailOptions)
-    })
-    .then(response => {
-      res.json({ success: true })
-      return response
-    })
-    .catch(e => next(e))
+      return next(err)
+    }
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: foundUser._id },
+      { $set: { resetToken: SignJWT(foundUser._id) } },
+      { new: true, useFindAndModify: false }
+    )
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: updatedUser.email,
+      subject: 'Password reset link for Zenerprise',
+      html: `
+      <h2>Please click on the link below to reset your password for your account at Zenerprise<h2>
+      <h3>If you did NOT make this password change request then please disregard this email.<h3>
+      <a href="http://localhost:3000/reset-password?token=${updatedUser.resetToken}">Reset Link</a> 
+    `
+    } //TODO: REPLACE THIS CONFIG CLIENT URL
+
+    const response = await transporter.sendMail(mailOptions)
+    res.json({ success: true })
+    return response
+  } catch (error) {
+    next(error)
+  }
 }
 
-function updateName(req, res, next) {
-  const userId = pathOr(null, ['session', 'userId'], req)
-
-  return User.findOneAndUpdate({ _id: userId }, req.body, { new: true })
-    .then(user => {
-      const returnObj = setReturnObject(user, req.session.userRoutes)
-      return res.json(returnObj)
+const updateName = async (req, res, next) => {
+  const userId = pathOr(null, ['session', 'user', 'id'], req)
+  const sessionRoutes = path(['session', 'user', 'routes'], req)
+  try {
+    const user = await User.findOneAndUpdate({ _id: userId }, req.body, {
+      new: true
     })
-    .catch(e => next(e))
+
+    const returnObj = setupProfileInfo(user, req)
+    return res.json(returnObj)
+  } catch (error) {
+    next(error)
+  }
 }
 
-function updateAddress(req, res, next) {
-  const userId = pathOr(null, ['session', 'userId'], req)
-
-  return User.findOneAndUpdate(
-    { _id: userId },
-    { addresses: [req.body] },
-    { new: true }
-  )
-    .then(user => {
-      const returnObj = setReturnObject(user, req.session.userRoutes)
-      return res.json(returnObj)
-    })
-    .catch(e => next(e))
+const updateAddress = async (req, res, next) => {
+  const userId = pathOr(null, ['session', 'user', 'id'], req)
+  const sessionRoutes = path(['session', 'user', 'routes'], req)
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: userId },
+      { addresses: [req.body] },
+      { new: true }
+    )
+    const returnObj = setupSessionUser(user, sessionRoutes, req)
+    return res.json(returnObj)
+  } catch (error) {
+    next(error)
+  }
 }
 
 function updateEmail(req, res, next) {
   const userId = pathOr(null, ['session', 'userId'], req)
+  console.log(req.body)
+  // const backupEmails = compose(evolve({
+  //   emails: compose(
+  //     map(email => assoc('primaryEmail', false, email)),
+  //     filter((email) => !email.primaryEmail)
+  //   )
+  // }))(req.body)
+  // console.log('---------------->', backupEmails)
 
-  return User.findOneAndUpdate({ _id: userId }, req.body, { new: true })
-    .then(user => {
-      const returnObj = setReturnObject(user, req.session.userRoutes)
-      return res.json(returnObj)
+  User.findOne({ 'emails.email': email })
+    .then(foundUsers => {
+      console.log('----------------->', foundUsers)
+      res.json({ test: 'passed' })
     })
     .catch(e => next(e))
+
+  // User.findOneAndUpdate({ _id: userId }, backupEmails, { new: true })
+  //   .then(user => {
+  //     console.log(user)
+  //     const returnObj = setupSessionUser(user, req.session.userRoutes)
+  //     return res.json(returnObj)
+  //   })
+  //   .catch(e => next(e))
 }
 
-function updatePrimaryPhone(req, res, next) {
-  const userId = pathOr(null, ['session', 'userId'], req)
+const addEmail = async (req, res, next) => {
+  const userId = pathOr(null, ['session', 'user', 'id'], req)
+  const newEmail = path(['body', 'emails', 0, 'email'], req)
+  const sessionRoutes = path(['session', 'user', 'routes'], req)
+  try {
+    const foundUser = await User.findOne({ 'emails.email': newEmail })
+    if (foundUser !== null) {
+      const err = new APIError('User already exists', httpStatus.CONFLICT, true)
+      next(err)
+    }
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: userId },
+      { $addToSet: { emails: { email: newEmail, primaryEmail: false } } },
+      { new: true }
+    )
+    const returnObj = setupSessionUser(user, sessionRoutes, req)
+    return res.json(returnObj)
+  } catch (error) {
+    const err = new APIError(
+      `Internal Server Error ${error}`,
+      httpStatus.INTERNAL_SERVER_ERROR
+    )
+    next(err)
+  }
+}
 
-  const emailId = path(['body', '_id'], req)
-  const [type, phone, phoneFormatted, phoneData] = props(
-    ['type', 'phone', 'phoneFormatted', 'phoneData'],
+const updatePrimaryPhone = async (req, res, next) => {
+  const sessionRoutes = path(['session', 'user', 'routes'], req)
+  const userId = pathOr(null, ['session', 'user', 'id'], req)
+  const [type, phone, phoneFormatted, phoneData, phoneId] = props(
+    ['type', 'phone', 'phoneFormatted', 'phoneData', '_id'],
     req.body
   )
-  return User.findOneAndUpdate(
-    {
-      _id: userId,
-      phoneNumbers: {
-        $elemMatch: {
-          _id: emailId,
-          primaryPhone: true
+  try {
+    const user = await User.findOneAndUpdate(
+      {
+        _id: userId,
+        phoneNumbers: {
+          $elemMatch: {
+            _id: phoneId,
+            primaryPhone: true
+          }
         }
-      }
-    },
-    {
-      $set: {
-        'phoneNumbers.$.type': type,
-        'phoneNumbers.$.phone': phone,
-        'phoneNumbers.$.phoneFormatted': phoneFormatted,
-        'phoneNumbers.$.phoneData': phoneData
-      }
-    },
-    { new: true }
-  )
-    .then(user => {
-      const returnObj = setReturnObject(user, req.session.userRoutes)
-      return res.json(returnObj)
-    })
-    .catch(e => next(e))
+      },
+      {
+        $set: {
+          'phoneNumbers.$.type': type,
+          'phoneNumbers.$.phone': phone,
+          'phoneNumbers.$.phoneFormatted': phoneFormatted,
+          'phoneNumbers.$.phoneData': phoneData
+        }
+      },
+      { new: true }
+    )
+    const returnObj = setupSessionUser(user, sessionRoutes, req)
+    return res.json(returnObj)
+  } catch (error) {
+    next(error)
+  }
 }
 
-function updatePassword(req, res, next) {
-  const userId = pathOr(null, ['session', 'userId'], req)
-
+const updatePassword = async (req, res, next) => {
+  const sessionRoutes = path(['session', 'user', 'routes'], req)
+  const userId = pathOr(null, ['session', 'user', 'id'], req)
   const oldPassword = req.body.oldPassword
   const newPassword = req.body.password
+  try {
+    const user = await User.findOne({ _id: userId }, '+password')
+    //Compare the user inputted old password against stored one
+    const isMatch = await bcrypt.compare(oldPassword, user.password)
+    if (!isMatch) {
+      const err = new APIError(
+        'Incorrect Login Information',
+        httpStatus.UNAUTHORIZED,
+        false
+      )
+      return next(err)
+    }
+    const updatedUser = await user.save()
+    const returnObj = setupSessionUser(updatedUser, sessionRoutes, req)
+    return res.json(returnObj)
+  } catch (error) {
+    next(error)
+  }
+}
 
-  User.findOneAsync({ _id: userId }, '+password')
-    .then(user => {
-      req.user = user
-      return bcrypt.compare(oldPassword, user.password)
-    })
-    .then(isMatch => {
-      if (!isMatch) {
-        const err = new APIError(
-          'Incorrect Login Information',
-          httpStatus.UNAUTHORIZED,
-          false
-        )
-        return next(err)
-      }
-
-      req.user.password = newPassword
-      return req.user.saveAsync()
-    })
-    .then(updatedUser => {
-      const returnObj = setReturnObject(updatedUser, req.session.userRoutes)
-      return res.json(returnObj)
-    })
-    .catch(e => next(e))
+const userProfile = async (req, res, next) => {
+  const profile = pathOr(null, ['session', 'user', 'profile'], req)
+  return res.json(profile)
 }
 
 export default {
@@ -345,5 +396,7 @@ export default {
   updateEmail,
   updatePrimaryPhone,
   updatePassword,
-  validateUser
+  validateUser,
+  addEmail,
+  userProfile
 }
