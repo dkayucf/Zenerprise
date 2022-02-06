@@ -4,15 +4,6 @@ import { useFormikContext } from 'formik'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { makeStyles } from '@material-ui/core/styles'
 import { useIsFocusVisible } from '../../../hooks'
-import {
-  anyPass,
-  filter,
-  evolve,
-  compose,
-  propEq,
-  startsWith,
-  toLower,
-} from 'ramda'
 
 const useStyles = makeStyles({
   option: {
@@ -37,6 +28,7 @@ export default function StateSelect() {
     useFormikContext()
   const {
     isFocusVisible,
+    // eslint-disable-next-line no-unused-vars
     onBlurVisible,
     ref: focusVisibleRef,
   } = useIsFocusVisible()
@@ -82,18 +74,6 @@ export default function StateSelect() {
       classes={{
         option: classes.option,
       }}
-      // filterOptions={(options, { inputValue }) =>
-      //   filter(
-      //     compose(
-      //       anyPass([propEq('label', true), propEq('value', true)]),
-      //       evolve({
-      //         label: (label) => startsWith(toLower(inputValue), toLower(label)),
-      //         value: (value) => startsWith(toLower(inputValue), toLower(value)),
-      //       })
-      //     ),
-      //     options
-      //   )
-      // }
       autoHighlight
       getOptionLabel={(option) => option.label}
       getOptionSelected={(option, { value }) => option.value === value}

@@ -1,3 +1,4 @@
+import { anyPass, findIndex, path, prop, propEq } from 'ramda'
 import * as yup from 'yup'
 
 const addressValidationSchema = yup.object({
@@ -10,12 +11,30 @@ const addressValidationSchema = yup.object({
       value: yup.string(),
       label: yup.string(),
     })
+    .nullable()
     .required('State is required'),
   country: yup
     .object({
       code: yup.string(),
       label: yup.string(),
     })
+    .test(
+      'country-validation',
+      'Invalid country',
+      (value, { options, parent }) => {
+        const countries = path(['context', 'countries'], options)
+        const countryInput = prop('country', parent)
+        const isMatch =
+          findIndex(
+            anyPass([
+              propEq('code', countryInput?.code),
+              propEq('label', countryInput?.label),
+            ]),
+            countries
+          ) !== -1
+        return isMatch
+      }
+    )
     .nullable()
     .required('Country is required'),
 })

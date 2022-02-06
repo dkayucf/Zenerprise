@@ -83,8 +83,8 @@ const initialAddress = {
   state: null,
   postalCode: '',
   country: {
-    code: 'US',
-    label: 'United States',
+    code: '',
+    label: '',
   },
 }
 

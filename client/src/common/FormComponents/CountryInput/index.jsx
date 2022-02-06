@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react'
 import { useFormikContext } from 'formik'
-import TextField from '@material-ui/core/TextField'
+import { TextField, FormHelperText } from '@material-ui/core/'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { makeStyles } from '@material-ui/core/styles'
 import { useIsFocusVisible } from '../../../hooks/'
+import CountryInputPaper from './CountryInputPaper'
 
 // ISO 3166-1 alpha-2
 // ⚠️ No support for IE 11
@@ -29,11 +30,14 @@ const useStyles = makeStyles({
 
 export default function CountrySelect() {
   const [open, setOpen] = useState(false)
+  const [autoSelect, setAutoSelect] = useState(false)
+
   const classes = useStyles()
   const { values, errors, touched, setFieldValue, setFieldTouched } =
     useFormikContext()
   const {
     isFocusVisible,
+    // eslint-disable-next-line no-unused-vars
     onBlurVisible,
     ref: focusVisibleRef,
   } = useIsFocusVisible()
@@ -52,7 +56,7 @@ export default function CountrySelect() {
     [setFieldValue]
   )
   const onBlur = useCallback(
-    () => setFieldTouched('country', true),
+    () => setFieldTouched('country', true, true),
     [setFieldTouched]
   )
 
@@ -72,12 +76,16 @@ export default function CountrySelect() {
       id="country-select"
       name="country"
       value={country}
+      freeSolo
+      blurOnSelect
+      autoSelect={autoSelect}
       getOptionLabel={(option) => option.label}
       getOptionSelected={(option, value) => option.code === value.code}
       onChange={onChange}
       selectOnFocus
       onBlur={onBlur}
       options={countries}
+      PaperComponent={CountryInputPaper(setAutoSelect)}
       classes={{
         option: classes.option,
       }}
@@ -101,7 +109,15 @@ export default function CountrySelect() {
           placeholder="Choose a Country"
           variant="outlined"
           margin="normal"
-          helperText={inputTouched && inputErrors}
+          helperText={
+            inputTouched &&
+            inputErrors &&
+            inputErrors.map((error, i) => (
+              <FormHelperText key={i} id={`${name}-error-text-${i}`}>
+                {error}
+              </FormHelperText>
+            ))
+          }
           name="country"
           required
           fullWidth

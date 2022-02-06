@@ -2,7 +2,6 @@ import React from 'react'
 import { FieldArray } from 'formik'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import * as yup from 'yup'
 import {
   Typography,
   Accordion as MuiAccordion,
