@@ -14,15 +14,19 @@ const emailValidationSchema = (validateEmail) =>
           otherwise: yup
             .string('Enter your email')
             .email('Enter a valid email')
-            .test('Valid Email', 'Email is unavailable', async (value) => {
-              if (value !== '' && value !== _cachedEmail) {
-                const validatedEmail = await validateEmail(value)
-                _isValidEmail = validatedEmail
-                _cachedEmail = value
-              }
+            .test(
+              'Valid Email',
+              'Email is unavailable. Please choose a different email.',
+              async (value) => {
+                if (value !== '' && value !== _cachedEmail) {
+                  const validatedEmail = await validateEmail(value)
+                  _isValidEmail = validatedEmail
+                  _cachedEmail = value
+                }
 
-              return _isValidEmail
-            })
+                return _isValidEmail
+              }
+            )
             .required('Email is required'),
         }),
       })

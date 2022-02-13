@@ -39,7 +39,6 @@ const ProfileInfoProvider = ({ children }) => {
   ] = useAsync(Profile.updatePrimaryPhone)
 
   const handleUpdateName = async (values) => {
-    console.log(values)
     const response = await updateName(values)
     if (response) {
       setProfile(response)

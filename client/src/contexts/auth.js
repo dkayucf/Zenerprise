@@ -52,6 +52,9 @@ ProvideAuth.propTypes = {
 const useProvideAuth = () => {
   const { push, replace } = useRouter()
   const [profile, setProfile] = useState(null)
+  const [csrfTokenRequest, getCSRFToken, resetGetCSRFToken] = useAsync(
+    Auth.getCSRFToken
+  )
   const [loginRequest, submitLogin, resetLogin] = useAsync(Auth.login)
   const [signupRequest, submitSignup, resetSignup] = useAsync(Auth.signup)
   const [logoutRequest, submitLogout, resetLogout] = useAsync(Auth.logout)
@@ -72,19 +75,21 @@ const useProvideAuth = () => {
 
   const validateEmail = async (value) => {
     if (value) {
-      const { isValidUser } = await submitValidateEmail({ email: value })
-      return isValidUser
+      await getCSRFToken()
+      return await submitValidateEmail({ email: value })
     }
   }
 
   const validatePhone = async (value) => {
     if (value) {
+      await getCSRFToken()
       const { isValidUser } = await submitValidatePhone({ phone: value })
       return isValidUser
     }
   }
 
   const signup = async (values) => {
+    await getCSRFToken()
     const user = await submitSignup(values)
     if (user) {
       setUser(user)
@@ -94,6 +99,7 @@ const useProvideAuth = () => {
     }
   }
   const login = async (values) => {
+    await getCSRFToken()
     const user = await submitLogin(values)
     if (user) {
       setUser(user)
@@ -103,6 +109,7 @@ const useProvideAuth = () => {
     }
   }
   const logout = async () => {
+    await getCSRFToken()
     const isLoggedOut = submitLogout()
     if (isLoggedOut) {
       setUser(defaultObj)
@@ -132,7 +139,7 @@ const useProvideAuth = () => {
       getProfile()
     }
   }, [user, submitProfileGet, resetProfileRequest, getProfile])
-  // console.log(profileRequest)
+
   // const sendPasswordResetEmail = async (email, cb) => {
   //   head(
   //     await makeRequest({
@@ -148,7 +155,7 @@ const useProvideAuth = () => {
 
   //   return {}
   // }
-  // console.log(user)
+
   // Return the user object and auth methods
   return {
     profile,

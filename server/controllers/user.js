@@ -12,7 +12,13 @@ import {
   evolve,
   map,
   assoc,
-  pick
+  pick,
+  splitAt,
+  split,
+  last,
+  toLower,
+  findIndex,
+  test
 } from 'ramda'
 import User from '../models/user'
 import { APIError } from '../helpers/'
@@ -62,11 +68,28 @@ const validateUser = async (req, res, next) => {
   const phoneNumber = pathOr('', ['body', 'phone'], req)
 
   try {
-    const foundUser = await User.findOne({
-      $or: [{ 'emails.email': email }, { 'phoneNumbers.phone': phoneNumber }]
-    })
+    const [tempEmailBlockList, foundUser] = await Promise.all([
+      getConfigPromise('tempEmailBlockList'),
+      User.findOne({
+        $or: [{ 'emails.email': email }, { 'phoneNumbers.phone': phoneNumber }]
+      })
+    ])
     if (foundUser) {
       res.json({ isValidUser: false })
+    } else if (email !== '') {
+      const domain = toLower(last(split('@', email)))
+      const isOnBlockList =
+        filter(x => x === domain, tempEmailBlockList).length > 0
+
+      if (isOnBlockList) {
+        res.json({
+          isValidUser: false,
+          message:
+            'Temporary email accounts are not allowed. Please enter a valid email.'
+        })
+      } else {
+        res.json({ isValidUser: true })
+      }
     } else {
       res.json({ isValidUser: true })
     }

@@ -8,7 +8,7 @@ import {
   InputLabel,
   FormHelperText,
 } from '@material-ui/core'
-import { split, path } from 'ramda'
+import { split, path, pathOr } from 'ramda'
 
 export default function FormikInput({
   name,
@@ -19,21 +19,13 @@ export default function FormikInput({
   validateOnChange,
   ...rest
 }) {
-  const {
-    values,
-    touched,
-    errors,
-    setFieldTouched,
-    setFieldValue,
-    initialValues,
-  } = useFormikContext()
+  const { values, touched, errors, setFieldTouched, setFieldValue } =
+    useFormikContext()
 
   const fieldName = split('.', name)
-  const inputTouched = path(fieldName, touched)
-  const inputErrors = path(fieldName, errors)
+  const inputTouched = pathOr(false, fieldName, touched)
+  const inputError = pathOr(false, fieldName, errors)
   const inputValue = path(fieldName, values)
-  const hasErrors = inputErrors && inputErrors.length > 0
-  const initialValue = path(fieldName, initialValues)
 
   const handleChange = useCallback(
     (e) => {
@@ -46,21 +38,14 @@ export default function FormikInput({
     [setFieldValue, validateOnChange, name]
   )
 
-  const handleBlur = useCallback(
-    (e) => {
-      if (e.target.value !== initialValue) {
-        setFieldTouched(name, true, true)
-      } else {
-        setFieldTouched(name, true, false)
-      }
-    },
-    [setFieldTouched, initialValue, name]
-  )
+  const handleBlur = useCallback(() => {
+    setFieldTouched(name, true, true)
+  }, [setFieldTouched, name])
 
   return (
     <FormControl
       variant="outlined"
-      error={(inputValue !== '' || inputTouched) && hasErrors ? true : false}
+      error={inputError && inputTouched}
       fullWidth
       margin="normal"
     >
@@ -78,13 +63,9 @@ export default function FormikInput({
         onBlur={handleBlur}
         {...rest}
       />
-      {(inputValue !== '' || inputTouched) &&
-        hasErrors &&
-        inputErrors.map((error, i) => (
-          <FormHelperText key={i} id={`${name}-error-text`}>
-            {error}
-          </FormHelperText>
-        ))}
+      {inputTouched && inputError && (
+        <FormHelperText id={`${name}-error-text`}>{inputError}</FormHelperText>
+      )}
     </FormControl>
   )
 }

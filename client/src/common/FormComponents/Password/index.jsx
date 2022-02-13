@@ -1,6 +1,8 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useFormikContext } from 'formik'
+import yup from '../helpers/yupMethods'
+import styled from 'styled-components'
 import {
   InputAdornment,
   IconButton,
@@ -8,9 +10,41 @@ import {
   FormControl,
   InputLabel,
   FormHelperText,
+  Box,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { Visibility, VisibilityOff } from '@material-ui/icons'
+import { Visibility, VisibilityOff, HelpOutline } from '@material-ui/icons'
+
+const passwordSchema = yup.object({
+  password: yup
+    .string('Enter your password')
+    .min(8, ' - Must be 8 characters or longer')
+    .test('has-lowercase-letter', ' - Include a lowercase letter', (value) =>
+      /^(?=.*[a-z])/.test(value)
+    )
+    .test('has-uppercase-letter', ' - Include a uppercase letter', (value) =>
+      /^(?=.*[A-Z])/.test(value)
+    )
+    .test('has-digit', ' - Include a digit', (value) =>
+      /^(?=.*[0-9])/.test(value)
+    )
+    .test('has-special-char', ' - Include a special character', (value) =>
+      /^(?=.*[!@#\$%\^&\*])/.test(value)
+    ),
+})
+
+const validatePassword = (value) => {
+  try {
+    passwordSchema.validateSync(value, {
+      abortEarly: false,
+    })
+  } catch (e) {
+    return e.errors
+  }
+}
 
 const useStyles = makeStyles((theme) => ({
   label: ({ focused, isLogin }) => ({
@@ -18,6 +52,87 @@ const useStyles = makeStyles((theme) => ({
     opacity: !focused && isLogin && 0.42,
   }),
 }))
+
+const StyledAccordion = styled(Accordion)`
+  &&.MuiAccordion-root {
+    &.Mui-expanded {
+      margin-top: 0;
+    }
+    &::before {
+      display: none;
+    }
+  }
+`
+
+const StyledAccordionSummary = styled(AccordionSummary)`
+  &&.MuiAccordionSummary-root {
+    min-height: 0;
+    border-radius: 0 0 5px 5px;
+    & > .Mui-expanded {
+      margin-top: 0;
+    }
+    & > .MuiAccordionSummary-content {
+      margin-top: 4px;
+      margin-bottom: 0;
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+  }
+`
+
+const PasswordHelperText = ({ passwordError, value }) => {
+  const [isOpen, setOpen] = useState(false)
+  let messages = [
+    ' - Must be 8 characters or longer',
+    ' - Include a lowercase letter',
+    ' - Include a uppercase letter',
+    ' - Include a digit',
+    ' - Include a special character',
+  ]
+  const validationErrors = validatePassword(value)
+  useEffect(() => {
+    if (passwordError) {
+      setOpen(true)
+    } else {
+      setOpen(false)
+    }
+  }, [passwordError])
+
+  return (
+    <StyledAccordion
+      elevation={0}
+      expanded={isOpen}
+      onChange={() => setOpen((prev) => !prev)}
+    >
+      <StyledAccordionSummary>
+        <Box
+          fontSize="0.75rem"
+          fontWeight="fontWeightLight"
+          display="flex"
+          alignItems="center"
+        >
+          Password Requirements &nbsp;
+          <HelpOutline color="primary" fontSize="small" />
+        </Box>
+      </StyledAccordionSummary>
+      <AccordionDetails>
+        <Box>
+          {validationErrors && validationErrors.length > 0
+            ? validationErrors.map((error, i) => (
+                <FormHelperText key={i} id={`helper-${i}-text`}>
+                  {error}
+                </FormHelperText>
+              ))
+            : messages.map((message, i) => (
+                <FormHelperText key={i} id={`helper-${i}-text`}>
+                  {message}
+                </FormHelperText>
+              ))}
+        </Box>
+      </AccordionDetails>
+    </StyledAccordion>
+  )
+}
 
 export default function Password({
   isLogin,
@@ -38,7 +153,7 @@ export default function Password({
   )
 
   const handleChange = (e) => {
-    if (validateOnChange) {
+    if (validateOnChange && !isLogin) {
       setFieldValue(name, e.target.value, true)
     } else {
       setFieldValue(name, e.target.value, false)
@@ -47,18 +162,19 @@ export default function Password({
 
   const toggleFocus = useCallback(() => setFocus((prev) => !prev), [])
   const handleBlur = useCallback(() => {
-    setFieldTouched(name, true)
-    setFocus((prev) => !prev)
-  }, [name, setFieldTouched])
+    if (!isLogin) {
+      setFieldTouched(name, true)
+      setFocus((prev) => !prev)
+    }
+  }, [name, setFieldTouched, isLogin])
 
   const touchedInput = touched[name]
-  const passwordErrors = errors[name]
-  const hasErrors = passwordErrors && passwordErrors.length > 0
+  const passwordError = errors[name]
 
   return (
     <FormControl
       variant="outlined"
-      error={touchedInput && hasErrors}
+      error={passwordError && touchedInput}
       fullWidth
       margin="normal"
     >
@@ -90,13 +206,19 @@ export default function Password({
         }
       />
       {!isLogin &&
-        (focused || touchedInput) &&
-        hasErrors &&
-        passwordErrors.map((error, i) => (
-          <FormHelperText key={i} id={`${name}-error-text-${i}`}>
-            {error}
+        touchedInput &&
+        passwordError &&
+        name === 'confirmPassword' && (
+          <FormHelperText id={`${name}-error-text`}>
+            {passwordError}
           </FormHelperText>
-        ))}
+        )}
+      {!isLogin && name !== 'confirmPassword' ? (
+        <PasswordHelperText
+          passwordError={passwordError && touchedInput}
+          value={values}
+        />
+      ) : null}
     </FormControl>
   )
 }

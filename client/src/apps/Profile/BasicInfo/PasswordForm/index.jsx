@@ -1,6 +1,7 @@
 import React from 'react'
 import { Grid } from '@material-ui/core'
 import Password from '../../../../common/FormComponents/Password'
+import PasswordConfirmation from '../../../../common/authentication/PasswordConfirmation'
 
 export default function PasswordForm() {
   return (
@@ -12,20 +13,7 @@ export default function PasswordForm() {
           label="Old password"
         />
       </Grid>
-      <Grid item xs={12}>
-        <Password
-          autoComplete="new-password"
-          name="password"
-          label="New password"
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <Password
-          autoComplete="new-password"
-          name="confirmPassword"
-          label="Confirm new password"
-        />
-      </Grid>
+      <PasswordConfirmation />
     </Grid>
   )
 }

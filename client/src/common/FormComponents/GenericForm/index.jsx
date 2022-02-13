@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { Formik, Form } from 'formik'
-import { fullValidatorForSchema } from '../helpers'
+import { Formik, Form, yupToFormErrors, validateYupSchema } from 'formik'
 
 export default function GenericForm({
   children,
@@ -26,9 +25,15 @@ export default function GenericForm({
     <Formik
       initialValues={initialValues}
       onSubmit={handleOnSubmit}
-      validate={fullValidatorForSchema(validationSchema, {
-        context: schemaContext,
-      })}
+      validate={(values) => {
+        try {
+          //The 4th parameter passed to validateYupSchema is a context that can be accessed within yup.when($propertyName) https://github.com/jquense/yup#mixedwhenkeys-string--arraystring-builder-object--value-schema-schema-schema
+          validateYupSchema(values, validationSchema, true, schemaContext)
+        } catch (err) {
+          return yupToFormErrors(err)
+        }
+        return {}
+      }}
       {...rest}
     >
       <Form>{children}</Form>
@@ -43,4 +48,8 @@ GenericForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   validationSchema: PropTypes.object.isRequired,
   schemaContext: PropTypes.object,
+}
+
+GenericForm.defaultProps = {
+  schemaContext: {},
 }

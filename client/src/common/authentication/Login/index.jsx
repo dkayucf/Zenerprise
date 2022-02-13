@@ -1,16 +1,17 @@
 import React from 'react'
 import { Formik } from 'formik'
 import * as yup from 'yup'
+import 'yup-phone'
 import { Typography, Divider, Box } from '@material-ui/core'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import { makeStyles } from '@material-ui/core/styles'
 import LoginForm from './Form'
 import AuthCard from '../AuthCard'
 import { ButtonRouter } from '../../RouterLink'
-import { fullValidatorForSchema } from '../../FormComponents/helpers'
+import GenericForm from '../../FormComponents/GenericForm'
 
 import { useAuth } from '../../../contexts/auth'
-import { test } from 'ramda'
+import { path, test, toUpper } from 'ramda'
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -32,8 +33,15 @@ const useStyles = makeStyles((theme) => ({
 const validationSchema = yup.object({
   user: yup
     .string('Enter your email or mobile phone number')
-    .test('is-email', 'Enter a valid email', (value) => {
+    .test('is-email', 'Enter a valid email', (value, context) => {
+      if (!value) return true
       const hasAtSymbol = test(/^(?=.*?[@])/, value)
+      const countryCode = path(
+        ['parent', 'phoneObject', 'countryCode'],
+        context
+      )
+      if (countryCode && !hasAtSymbol) return true
+
       if (hasAtSymbol) {
         return yup
           .string()
@@ -41,16 +49,36 @@ const validationSchema = yup.object({
           .isValid(value)
           .then((response) => response)
           .catch((err) => err)
+      }
+    })
+    .test('is-email', 'Enter a valid phone number', (value, context) => {
+      if (!value) return true
+      const countryCode = path(
+        ['parent', 'phoneObject', 'countryCode'],
+        context
+      )
+      if (countryCode) {
+        const phoneValidationSchema = yup
+          .string()
+          .phone(toUpper(countryCode), true, '${path} is invalid')
+          .required()
+
+        return phoneValidationSchema.isValidSync(value)
       } else {
-        return true
+        return false
       }
     })
     .required('Email or mobile phone number is required'),
   password: yup
     .string('Enter your password')
-    .min(8, 'Password should be of minimum 8 characters length')
+    .min(8, 'Password should be a minimum of 8 characters long')
     .required('Password is required'),
 })
+
+const initialValues = {
+  user: '',
+  password: '',
+}
 
 export default function SignIn() {
   const classes = useStyles()
@@ -58,18 +86,13 @@ export default function SignIn() {
 
   return (
     <AuthCard logo={<LockOutlinedIcon />} cardHeading="Sign in">
-      <Formik
-        initialValues={{
-          user: '',
-          password: '',
-        }}
+      <GenericForm
+        initialValues={initialValues}
+        validationSchema={validationSchema}
         onSubmit={login}
-        validate={fullValidatorForSchema(validationSchema)}
       >
-        {({ handleSubmit, values }) => (
-          <LoginForm handleSubmit={handleSubmit} values={values} />
-        )}
-      </Formik>
+        <LoginForm />
+      </GenericForm>
       <Box textAlign="center">
         <Typography
           variant="body1"

@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  zenerprise-api:
+  backend:
     build:
       args:
         NODE_ENV: production

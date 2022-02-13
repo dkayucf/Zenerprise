@@ -5,11 +5,12 @@ import CheckIcon from '@material-ui/icons/Check'
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline'
 import { makeStyles } from '@material-ui/core/styles'
 import PhoneNumber from '../../FormComponents/PhoneNumber'
-import Password from '../../FormComponents/Password'
 import Input from '../../FormComponents/FormikInput'
 import LoadingButton from '../../LoadingButton'
 import { useAuth } from '../../../contexts/auth'
 import { LinkRouter } from '../../RouterLink'
+import NameForm from '../../Profile/NameForm'
+import PasswordConfirmation from '../PasswordConfirmation'
 
 const useStyles = makeStyles((theme) => ({
   form: {
@@ -37,13 +38,7 @@ const InputIcon = ({ isLoading, isSuccessful, isValid }) => {
   return null
 }
 
-export default function SignUpForm({
-  handleSubmit,
-  values,
-  isValid,
-  dirty,
-  setFieldError,
-}) {
+export default function SignUpForm({ values, isValid, dirty, setFieldError }) {
   const classes = useStyles()
   const {
     signUpStatus,
@@ -55,35 +50,18 @@ export default function SignUpForm({
 
   useEffect(() => {
     resetEmailValidate()
-    setFieldError('email', '')
+    setFieldError('email', false)
   }, [values.email, resetEmailValidate, setFieldError])
 
   useEffect(() => {
     resetPhoneValidate()
-    setFieldError('phone', '')
+    setFieldError('phone', false)
   }, [values.phone, resetPhoneValidate, setFieldError])
 
   return (
-    <form className={classes.form} onSubmit={handleSubmit}>
+    <Box className={classes.form}>
       <Grid container>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <Input
-              name="firstName"
-              label="First Name"
-              required
-              autoComplete="given-name"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Input
-              name="lastName"
-              label="Last Name"
-              required
-              autoComplete="family-name"
-            />
-          </Grid>
-        </Grid>
+        <NameForm />
         <Grid item xs={12}>
           <Input
             name="email"
@@ -117,20 +95,7 @@ export default function SignUpForm({
             </InputAdornment>
           </PhoneNumber>
         </Grid>
-        <Grid item xs={12}>
-          <Password
-            autoComplete="new-password"
-            name="password"
-            label="Password"
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Password
-            autoComplete="new-password"
-            name="confirmPassword"
-            label="Confirm Password"
-          />
-        </Grid>
+        <PasswordConfirmation />
         <Grid item xs={12}>
           <Box mt={3} mb={1}>
             <LoadingButton
@@ -151,14 +116,13 @@ export default function SignUpForm({
           </LinkRouter>
         </Grid>
       </Grid>
-    </form>
+    </Box>
   )
 }
 
 SignUpForm.propTypes = {
   dirty: PropTypes.bool,
   isValid: PropTypes.bool,
-  handleSubmit: PropTypes.func,
   values: PropTypes.object,
   setFieldError: PropTypes.func,
 }

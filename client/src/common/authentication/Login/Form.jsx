@@ -15,12 +15,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-export default function SignInForm({ handleSubmit }) {
+export default function SignInForm() {
   const classes = useStyles()
   const { loginStatus } = useAuth()
 
   return (
-    <form className={classes.form} onSubmit={handleSubmit}>
+    <Box className={classes.form}>
       <UserInput />
       <Password
         isLogin
@@ -42,7 +42,7 @@ export default function SignInForm({ handleSubmit }) {
           Sign In
         </LoadingButton>
       </Box>
-    </form>
+    </Box>
   )
 }
 

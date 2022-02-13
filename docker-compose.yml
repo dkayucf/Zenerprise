@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  zenerprise-api:
+  backend:
     restart: always
     build:
       context: ./server
@@ -10,7 +10,7 @@ services:
     depends_on:
       - mongodb
     networks:
-      - zenerprise-api-network
+      - api-network
 
   mongodb:
     image: mongo:4.4-bionic
@@ -21,7 +21,7 @@ services:
       # for persistence storage
       - mongodb-data:/data/db
     networks:
-      - zenerprise-api-network
+      - api-network
 
   client:
     restart: always
@@ -29,14 +29,14 @@ services:
       context: ./client
       dockerfile: Dockerfile
     depends_on:
-      - zenerprise-api
+      - backend
     networks:
-      - zenerprise-api-network
+      - api-network
 
   nginx:
     restart: always
     depends_on:
-      - zenerprise-api
+      - backend
       - client
     build:
       context: ./nginx
@@ -44,10 +44,10 @@ services:
     ports:
       - 80:80
     networks:
-      - zenerprise-api-network
+      - api-network
 
 networks:
-  zenerprise-api-network:
+  api-network:
     driver: bridge
 
 volumes:

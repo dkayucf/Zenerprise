@@ -1,10 +1,11 @@
 import React, { useCallback, useState } from 'react'
 import { useFormikContext } from 'formik'
-import { TextField, FormHelperText } from '@material-ui/core/'
+import { TextField } from '@material-ui/core/'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { makeStyles } from '@material-ui/core/styles'
 import { useIsFocusVisible } from '../../../hooks/'
 import CountryInputPaper from './CountryInputPaper'
+import { filter, includes, whereAny, toLower } from 'ramda'
 
 // ISO 3166-1 alpha-2
 // ⚠️ No support for IE 11
@@ -28,8 +29,17 @@ const useStyles = makeStyles({
   },
 })
 
+const filterCountries = (countries, inputVal) =>
+  filter(
+    whereAny({
+      label: (val) => includes(toLower(inputVal), toLower(val)),
+    }),
+    countries
+  )
+
 export default function CountrySelect() {
   const [open, setOpen] = useState(false)
+  const [inputValue, setInputValue] = useState('')
   const [autoSelect, setAutoSelect] = useState(false)
 
   const classes = useStyles()
@@ -55,9 +65,22 @@ export default function CountrySelect() {
     },
     [setFieldValue]
   )
-  const onBlur = useCallback(
-    () => setFieldTouched('country', true, true),
-    [setFieldTouched]
+
+  const onBlur = useCallback(() => {
+    if (inputValue) {
+      const filteredCountries = filterCountries(countries, inputValue)
+      if (filteredCountries.length === 1) {
+        setFieldValue('country', filteredCountries[0], false)
+      } else {
+        setFieldValue('country.label', inputValue, false)
+      }
+    }
+    return setFieldTouched('country', true, true)
+  }, [inputValue, setFieldTouched, setFieldValue])
+
+  const onInputChange = useCallback(
+    (e, newInputValue) => setInputValue(newInputValue),
+    []
   )
 
   const hasErrors = inputErrors && inputErrors.length > 0
@@ -77,7 +100,6 @@ export default function CountrySelect() {
       name="country"
       value={country}
       freeSolo
-      blurOnSelect
       autoSelect={autoSelect}
       getOptionLabel={(option) => option.label}
       getOptionSelected={(option, value) => option.code === value.code}
@@ -86,6 +108,8 @@ export default function CountrySelect() {
       onBlur={onBlur}
       options={countries}
       PaperComponent={CountryInputPaper(setAutoSelect)}
+      inputValue={inputValue}
+      onInputChange={onInputChange}
       classes={{
         option: classes.option,
       }}
@@ -109,15 +133,7 @@ export default function CountrySelect() {
           placeholder="Choose a Country"
           variant="outlined"
           margin="normal"
-          helperText={
-            inputTouched &&
-            inputErrors &&
-            inputErrors.map((error, i) => (
-              <FormHelperText key={i} id={`${name}-error-text-${i}`}>
-                {error}
-              </FormHelperText>
-            ))
-          }
+          helperText={inputTouched && inputErrors}
           name="country"
           required
           fullWidth

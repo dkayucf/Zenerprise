@@ -1,10 +1,9 @@
 import React from 'react'
 import { Formik } from 'formik'
-import * as yup from 'yup'
+import yup from '../../FormComponents/helpers/yupMethods'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
 import AuthCard from '../AuthCard'
 import SignUpForm from './Form'
-import { fullValidatorForSchema } from '../../FormComponents/helpers'
 
 import { useAuth } from '../../../contexts/auth'
 
@@ -24,23 +23,36 @@ const validationSchema = (validateEmail, validatePhone) => {
     email: yup
       .string('Enter your email')
       .email('Enter a valid email')
-      .test('Valid Email', 'Email is unavailable', async (value) => {
-        if (value !== '' && value !== _cachedEmail) {
-          const validatedEmail = await validateEmail(value)
-          _isValidEmail = validatedEmail
-          _cachedEmail = value
-        }
+      .test(
+        'Valid Email',
+        'Email is unavailable.  Please choose a different email.',
+        async (value, context) => {
+          if (!value) return true //bypass this validation to display required error
+          if (value !== _cachedEmail) {
+            const { isValidUser, message } = await validateEmail(value)
 
-        return _isValidEmail
-      })
+            if (message) {
+              return context.createError({
+                path: context.path,
+                message: message,
+              })
+            }
+            _isValidEmail = isValidUser
+            _cachedEmail = value
+          }
+
+          return _isValidEmail
+        }
+      )
       .required('Email is required'),
     phone: yup
-      .string('Enter your mobile phone number ')
+      .string('Enter your phone number ')
       .test(
         'Valid Phone Number',
         'Phone number is unavailable',
         async (value) => {
-          if (value !== '' && value !== _cachedPhone) {
+          if (!value) return true //bypass this validation to display required error
+          if (value !== _cachedPhone) {
             const validatedPhone = await validatePhone(value)
             _isValidPhone = validatedPhone
             _cachedPhone = value
@@ -48,7 +60,7 @@ const validationSchema = (validateEmail, validatePhone) => {
           return _isValidPhone
         }
       )
-      .required('Mobile phone number is required'),
+      .required('Phone number is required'),
     phoneData: yup.object({
       countryCode: yup.string(),
       dialCode: yup.string(),
@@ -58,19 +70,8 @@ const validationSchema = (validateEmail, validatePhone) => {
     phoneFormatted: yup.string(),
     password: yup
       .string('Enter your password')
-      .matches(/^.{8,}$/, '8 characters or longer')
-      .matches(
-        /^((?=.*?[a-zA-Z])|(?=.*?[#?!@$%^&*-]))/,
-        'At least 1 letter or symbol (like !@#$%^).'
-      )
-      .matches(
-        /^((?=.*?[0-9])|(?=.*?[#?!@$%^&*-]))/,
-        'At least 1 number or symbol (like !@#$%^).'
-      )
-      .matches(
-        /^((?=.*?[0-9])|(?=.*?[a-zA-Z]))/,
-        'At least 1 letter or number.'
-      )
+      .min(8, 'Password must be 8 characters or longer')
+      .strongPassword()
       .required('Password is required'),
     confirmPassword: yup
       .string()
@@ -102,9 +103,7 @@ export default function SignUp() {
       <Formik
         initialValues={initialValues}
         onSubmit={signup}
-        validate={fullValidatorForSchema(
-          validationSchema(validateEmail, validatePhone)
-        )}
+        validationSchema={validationSchema(validateEmail, validatePhone)}
         validateOnChange={false}
       >
         {({ values, handleSubmit, isValid, dirty, setFieldError }) => (

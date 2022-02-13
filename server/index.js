@@ -1,6 +1,7 @@
 /* eslint-disable import/first */
 require('dotenv').config()
 const os = require('os')
+const cookieParser = require('cookie-parser')
 import express from 'express'
 import session from 'express-session'
 import connectToDB from './database/db'
@@ -16,6 +17,7 @@ import winstonInstance from './config/winston'
 import publicRoutes from './routes/public'
 import privateRoutes from './routes/private/index'
 import { isAuth, APIError } from './helpers'
+const csrf = require('csurf')
 
 require = require('esm')(module)
 
@@ -37,7 +39,6 @@ if (environment === 'development') {
 }
 
 app.use(express.json())
-
 app.use(compress())
 app.use(methodOverride())
 
@@ -104,13 +105,23 @@ if (environment === 'production') {
   sess.cookie.httpOnly = true
 }
 
+const csrfProtection = csrf({
+  cookie: true
+})
+
 app.use(session(sess))
+app.use(cookieParser())
+
+app.get('/api/getCSRFToken', csrfProtection, (req, res) => {
+  console.log('CSRF TOKEN TEST---------------------->', req)
+  res.json({ CSRFToken: req.csrfToken() })
+})
 
 // mount all routes on /api path
-app.use('/api', publicRoutes)
+app.use('/api', csrfProtection, publicRoutes)
 
 //mount all authenticated requests through apix endpoint with isAuth middleware check
-app.use('/apix', isAuth, privateRoutes)
+app.use('/apix', csrfProtection, isAuth, privateRoutes)
 
 // if error is not an instanceOf APIError, convert it.
 app.use((err, req, res, next) => {

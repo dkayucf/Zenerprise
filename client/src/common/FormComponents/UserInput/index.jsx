@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { TextField } from '@material-ui/core'
 import PhoneNumber from '../../FormComponents/PhoneNumber'
 import { useFormikContext } from 'formik'
-import { test } from 'ramda'
+import { test, assoc } from 'ramda'
 
 export default function UserInput() {
   const {
@@ -11,6 +11,7 @@ export default function UserInput() {
     handleChange,
     touched,
     errors,
+    setFieldTouched,
   } = useFormikContext()
 
   const [userInputFocused, setUserFocused] = useState(false)
@@ -39,11 +40,18 @@ export default function UserInput() {
     const isLetter = test(/[\D]/, nativeInputData)
     if (isLetter && nativeInputData) {
       setUserHasLetters(true)
-      setFieldValue('user', phoneNumber + nativeInputData)
+      setFieldValue('phoneObject', null, false)
+      setFieldValue('user', phoneNumber + nativeInputData, true)
       setUserFocused(true)
     } else {
-      setFieldValue('user', phoneNumber)
+      setFieldValue('phoneObject', phoneObject, false)
+      setFieldValue('user', phoneNumber, true)
     }
+  }
+
+  const onBlur = () => {
+    setUserFocused(false)
+    setFieldTouched('user', true, true)
   }
 
   return isEmail ? (
@@ -59,7 +67,7 @@ export default function UserInput() {
       name="user"
       placeholder="Email or mobile number"
       onFocus={() => setUserFocused(true)}
-      onBlur={() => setUserFocused(false)}
+      onBlur={onBlur}
       value={values.user}
       onChange={handleChange}
       error={touched.user && Boolean(errors.user)}

@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react'
-import { Box, Typography } from '@material-ui/core'
+import { Box, Typography, Grid } from '@material-ui/core'
 import { useAuth } from '../../../contexts/auth'
 import { useProfileInfo } from '../../../contexts/profile'
 import Accordion from '../Accordion'
-import NameForm from './NameForm'
+import NameForm from '../../../common/Profile/NameForm'
 import PasswordForm from './PasswordForm'
 import { prop } from 'ramda'
 
@@ -43,7 +43,9 @@ export default function BasicInfo() {
           expanded={expanded === 'Name'}
           handleSubmit={handleUpdateName}
         >
-          <NameForm />
+          <Grid container>
+            <NameForm />
+          </Grid>
         </Accordion>
         <Accordion
           label="Password"

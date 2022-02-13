@@ -1,9 +1,11 @@
 import React, { useCallback, useState } from 'react'
-import TextField from '@material-ui/core/TextField'
+import { TextField } from '@material-ui/core'
 import { useFormikContext } from 'formik'
 import Autocomplete from '@material-ui/lab/Autocomplete'
 import { makeStyles } from '@material-ui/core/styles'
 import { useIsFocusVisible } from '../../../hooks'
+import StatesInputPaper from './StatesInputPaper'
+import { filter, includes, whereAny, toLower } from 'ramda'
 
 const useStyles = makeStyles({
   option: {
@@ -21,20 +23,32 @@ function toTitleCase(str) {
   })
 }
 
+const filterStates = (states, inputVal) =>
+  filter(
+    whereAny({
+      label: (val) => includes(toLower(inputVal), toLower(val)),
+    }),
+    states
+  )
+
 export default function StateSelect() {
   const [open, setOpen] = useState(false)
+  const [inputValue, setInputValue] = useState('')
+  const [autoSelect, setAutoSelect] = useState(false)
   const classes = useStyles()
   const { values, touched, errors, setFieldValue, setFieldTouched } =
     useFormikContext()
+  const inputTouched = touched['state']
+  const inputErrors = errors['state']
+  const state = values['state']
+  const hasErrors = inputErrors && inputErrors.length > 0
+
   const {
     isFocusVisible,
     // eslint-disable-next-line no-unused-vars
     onBlurVisible,
     ref: focusVisibleRef,
   } = useIsFocusVisible()
-  const inputTouched = touched['state']
-  const inputErrors = errors['state']
-  const state = values['state']
 
   const onChange = useCallback(
     (e, state) => {
@@ -46,11 +60,21 @@ export default function StateSelect() {
     [setFieldValue]
   )
 
-  const hasErrors = inputErrors && inputErrors.length > 0
+  const onBlur = useCallback(() => {
+    if (inputValue) {
+      const filteredStates = filterStates(usStates, inputValue)
+      if (filteredStates.length === 1) {
+        setFieldValue('state', filteredStates[0], false)
+      } else {
+        setFieldValue('state.label', inputValue, false)
+      }
+    }
+    return setFieldTouched('state', true, true)
+  }, [inputValue, setFieldTouched, setFieldValue])
 
-  const onBlur = useCallback(
-    () => setFieldTouched('state', true),
-    [setFieldTouched]
+  const onInputChange = useCallback(
+    (e, newInputValue) => setInputValue(newInputValue),
+    []
   )
 
   const handleOpen = (e) => {
@@ -68,9 +92,14 @@ export default function StateSelect() {
       name="state"
       value={state}
       selectOnFocus
+      freeSolo
+      autoSelect={autoSelect}
       onChange={onChange}
       onBlur={onBlur}
       options={usStates}
+      PaperComponent={StatesInputPaper(setAutoSelect)}
+      inputValue={inputValue}
+      onInputChange={onInputChange}
       classes={{
         option: classes.option,
       }}

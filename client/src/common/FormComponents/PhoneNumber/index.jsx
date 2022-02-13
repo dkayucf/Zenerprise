@@ -8,10 +8,10 @@ import { Box, FormHelperText } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles((theme) => ({
-  phoneInput: ({ hasErrors, touched }) => ({
+  phoneInput: ({ error, touched }) => ({
     '&&': {
       border:
-        hasErrors && touched
+        error && touched
           ? `1px solid ${theme.palette.error.main}`
           : '1px solid #CACACA',
     },
@@ -21,21 +21,41 @@ const useStyles = makeStyles((theme) => ({
     },
     '&&.form-control:focus': {
       borderColor:
-        hasErrors && touched
+        error && touched
           ? theme.palette.error.main
           : theme.palette.primary.main,
       boxShadow:
-        hasErrors && touched
+        error && touched
           ? `0 0 0 1px ${theme.palette.error.main}`
           : `0 0 0 1px ${theme.palette.primary.main}`,
     },
+    '&&.form-control:hover': {
+      borderColor:
+        error && touched
+          ? theme.palette.error.main
+          : theme.palette.primary.main,
+    },
+    '&&.selected-flag:hover': {
+      backgroundColor: 'red',
+      zIndex: 99999,
+    },
   }),
-  container: ({ hasErrors, touched, isFocused }) => ({
+  countryButton: () => ({
+    '&&:hover': {
+      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+      zIndex: 99999,
+    },
+    '& .selected-flag:focus': {
+      backgroundColor: 'rgba(0, 0, 0, 0.04)',
+      zIndex: 99999,
+    },
+  }),
+  container: ({ error, touched, isFocused }) => ({
     '& .special-label': {
       fontSize: 12,
       left: 15,
       color:
-        hasErrors && touched
+        error && touched
           ? theme.palette.error.main
           : isFocused
           ? theme.palette.primary.main
@@ -52,9 +72,8 @@ const PhoneInputField = ({ children, ...props }) => {
 
   const { name, value } = field
   const { error, touched } = meta
-  const hasErrors = error && error.length > 0
 
-  const classes = useStyles({ error, hasErrors, touched, isFocused })
+  const classes = useStyles({ error, touched, isFocused })
   const toggleFocus = useCallback(() => setIsFocused((prev) => !prev), [])
   const handleBlur = useCallback(() => {
     setIsFocused((prev) => !prev)
@@ -95,6 +114,7 @@ const PhoneInputField = ({ children, ...props }) => {
           specialLabel={required ? 'Phone *' : 'Phone'}
           placeholder="Enter phone number"
           containerStyle={{ marginTop: 16, marginBottom: 8 }}
+          buttonClass={classes.countryButton}
           containerClass={classes.container}
           inputClass={classes.phoneInput}
           inputStyle={{ width: '100%' }}
@@ -107,13 +127,9 @@ const PhoneInputField = ({ children, ...props }) => {
         />
         {children}
       </Box>
-      {hasErrors &&
-        touched &&
-        error.map((err, i) => (
-          <FormHelperText error={touched && hasErrors} key={i}>
-            {err}
-          </FormHelperText>
-        ))}
+      {touched && error && (
+        <FormHelperText error={error && touched}>{error}</FormHelperText>
+      )}
     </Box>
   )
 }
