@@ -32,7 +32,7 @@ const passwordSchema = yup.object({
       /^(?=.*[0-9])/.test(value)
     )
     .test('has-special-char', ' - Include a special character', (value) =>
-      /^(?=.*[!@#\$%\^&\*])/.test(value)
+      /^(?=.*[!@#$%^&*])/.test(value)
     ),
 })
 
@@ -134,6 +134,11 @@ const PasswordHelperText = ({ passwordError, value }) => {
   )
 }
 
+PasswordHelperText.propTypes = {
+  value: PropTypes.object,
+  passwordError: PropTypes.bool,
+}
+
 export default function Password({
   isLogin,
   autoComplete,
@@ -176,7 +181,7 @@ export default function Password({
       variant="outlined"
       error={passwordError && touchedInput}
       fullWidth
-      margin="normal"
+      margin={isLogin ? 'normal' : 'dense'}
     >
       <InputLabel className={classes.label} htmlFor={name} required>
         {label}
@@ -213,7 +218,7 @@ export default function Password({
             {passwordError}
           </FormHelperText>
         )}
-      {!isLogin && name !== 'confirmPassword' ? (
+      {!isLogin && name !== 'confirmPassword' && name !== 'oldPassword' ? (
         <PasswordHelperText
           passwordError={passwordError && touchedInput}
           value={values}

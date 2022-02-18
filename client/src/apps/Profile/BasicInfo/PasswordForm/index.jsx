@@ -1,19 +1,23 @@
 import React from 'react'
-import { Grid } from '@material-ui/core'
+import { Typography, Box } from '@material-ui/core'
 import Password from '../../../../common/FormComponents/Password'
 import PasswordConfirmation from '../../../../common/authentication/PasswordConfirmation'
 
 export default function PasswordForm() {
   return (
-    <Grid container>
-      <Grid item xs={12}>
+    <Box flexGrow={1}>
+      <Box mb={2}>
+        <Typography>Confirm your current password</Typography>
         <Password
           autoComplete="current-password"
           name="oldPassword"
           label="Old password"
         />
-      </Grid>
-      <PasswordConfirmation />
-    </Grid>
+      </Box>
+      <Box>
+        <Typography>Enter your new password</Typography>
+        <PasswordConfirmation />
+      </Box>
+    </Box>
   )
 }

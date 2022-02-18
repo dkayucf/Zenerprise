@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from 'react'
 import PropTypes from 'prop-types'
+import { pathOr, test } from 'ramda'
 import { useAsync } from '../hooks/useAsync'
 import { useCookie } from '../hooks/useCookie'
 import { useRouter } from '../hooks/useRouter'
@@ -32,6 +33,8 @@ const authContext = createContext({
   resetEmailValidate: () => {},
   sendPasswordResetEmail: () => {},
   setUser: () => {},
+  resetLogin: () => {},
+  loginStatusMessage: "Some of your info isn't correct. Please try again.",
   loginStatus: {},
   logoutStatus: {},
   signUpStatus: {},
@@ -52,9 +55,6 @@ ProvideAuth.propTypes = {
 const useProvideAuth = () => {
   const { push, replace } = useRouter()
   const [profile, setProfile] = useState(null)
-  const [csrfTokenRequest, getCSRFToken, resetGetCSRFToken] = useAsync(
-    Auth.getCSRFToken
-  )
   const [loginRequest, submitLogin, resetLogin] = useAsync(Auth.login)
   const [signupRequest, submitSignup, resetSignup] = useAsync(Auth.signup)
   const [logoutRequest, submitLogout, resetLogout] = useAsync(Auth.logout)
@@ -72,24 +72,26 @@ const useProvideAuth = () => {
   // ] = useAsync(Auth.passwordResetEmail)
   const { sessionCookie, setSessionCookie, removeCookie } = useCookie()
   const [user, setUser] = useState(sessionCookie.user)
+  const loginStatusMessage = pathOr(
+    `Some of your info isn't correct. Please try again.`,
+    ['error', 'response', 'data', 'message'],
+    loginRequest
+  )
 
   const validateEmail = async (value) => {
     if (value) {
-      await getCSRFToken()
       return await submitValidateEmail({ email: value })
     }
   }
 
   const validatePhone = async (value) => {
     if (value) {
-      await getCSRFToken()
       const { isValidUser } = await submitValidatePhone({ phone: value })
       return isValidUser
     }
   }
 
   const signup = async (values) => {
-    await getCSRFToken()
     const user = await submitSignup(values)
     if (user) {
       setUser(user)
@@ -98,8 +100,28 @@ const useProvideAuth = () => {
       push('/auth/dashboard')
     }
   }
-  const login = async (values) => {
-    await getCSRFToken()
+  const login = async (values, resetValues, actions) => {
+    let { setErrors, setTouched } = actions
+    const hasCountdownTimer = test(/[0-9]/g, loginStatusMessage)
+    if (hasCountdownTimer) {
+      resetValues({
+        user: '',
+        password: '',
+      })
+      setErrors({
+        user: 'Too Many Requests',
+        password: 'Too Many Requests',
+      })
+      setTouched(
+        {
+          user: true,
+          password: true,
+        },
+        false
+      )
+      return null
+    }
+
     const user = await submitLogin(values)
     if (user) {
       setUser(user)
@@ -109,7 +131,6 @@ const useProvideAuth = () => {
     }
   }
   const logout = async () => {
-    await getCSRFToken()
     const isLoggedOut = submitLogout()
     if (isLoggedOut) {
       setUser(defaultObj)
@@ -168,9 +189,11 @@ const useProvideAuth = () => {
     setProfile,
     validateEmail,
     validatePhone,
+    resetLogin,
     resetEmailValidate,
     resetPhoneValidate,
     sendPasswordResetEmail,
+    loginStatusMessage: loginStatusMessage,
     loginStatus: loginRequest.status,
     logoutStatus: logoutRequest.status,
     signUpStatus: signupRequest.status,

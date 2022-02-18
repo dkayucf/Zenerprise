@@ -106,14 +106,15 @@ export default function SignUp() {
         validationSchema={validationSchema(validateEmail, validatePhone)}
         validateOnChange={false}
       >
-        {({ values, handleSubmit, isValid, dirty, setFieldError }) => (
-          <SignUpForm
-            values={values}
-            handleSubmit={handleSubmit}
-            isValid={isValid}
-            dirty={dirty}
-            setFieldError={setFieldError}
-          />
+        {({ values, isValid, dirty, setFieldError, handleSubmit }) => (
+          <form onSubmit={handleSubmit}>
+            <SignUpForm
+              values={values}
+              isValid={isValid}
+              dirty={dirty}
+              setFieldError={setFieldError}
+            />
+          </form>
         )}
       </Formik>
     </AuthCard>

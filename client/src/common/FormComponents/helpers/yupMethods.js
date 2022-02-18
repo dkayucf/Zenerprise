@@ -18,7 +18,7 @@ function strongPasswordMethod() {
         })
       case !/^(?=.*[0-9])/.test(value):
         return createError({ path, message: 'Password must include digit' })
-      case !/^(?=.*[!@#\$%\^&\*])/.test(value):
+      case !/^(?=.*[!@#$%^&*])/.test(value):
         return createError({
           path,
           message: 'Password must include special character',

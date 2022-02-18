@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { TextField } from '@material-ui/core'
 import PhoneNumber from '../../FormComponents/PhoneNumber'
 import { useFormikContext } from 'formik'
-import { test, assoc } from 'ramda'
+import { test } from 'ramda'
 
 export default function UserInput() {
   const {

@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from '../../api'
 
 /*
 //-- Private Authentication APIS --  /apix
@@ -18,10 +18,6 @@ const profile = async () => {
 /*
 //-- Public Authentication APIS
 */
-const getCSRFToken = async () => {
-  const response = await axios.get('/api/getCSRFToken')
-  axios.defaults.headers.post['X-CSRF-Token'] = response.data.CSRFToken
-}
 
 const validateUser = async (credentials) => {
   const response = await axios.post('/api/users/validate-user', credentials)
@@ -47,7 +43,6 @@ const passwordResetEmail = async (credentials) => {
 }
 
 export default {
-  getCSRFToken,
   login,
   signup,
   logout,

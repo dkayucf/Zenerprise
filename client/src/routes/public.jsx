@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { Switch, Route, Redirect } from 'react-router-dom'
+import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/auth'
 import Home from '../Pages/public/Home'
 import {
@@ -11,7 +11,12 @@ import {
 } from '../Pages/public/Authentication'
 
 export const PublicRoute = ({ children, ...rest }) => {
-  const { user } = useAuth()
+  const { user, resetLogin } = useAuth()
+  const location = useLocation()
+
+  useEffect(() => {
+    resetLogin()
+  }, [location, resetLogin])
 
   return (
     <Route

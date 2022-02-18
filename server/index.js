@@ -86,6 +86,7 @@ if (environment === 'development') {
 }
 
 const sess = {
+  name: 'session',
   secret: sessionSecret,
   resave: false,
   saveUninitialized: true,
@@ -100,9 +101,13 @@ const sess = {
 }
 
 if (environment === 'production') {
+  const expiryDate = new Date(Date.now() + 60 * 60 * 1000)
   app.set('trust proxy', 1) // trust first proxy
   sess.cookie.secure = true // serve secure cookies
   sess.cookie.httpOnly = true
+  sess.cookie.expires = expiryDate
+  sess.cookie.path = '/apix/*'
+  // sess.cookie.domain = 'zenerprise.com'
 }
 
 const csrfProtection = csrf({
@@ -113,8 +118,16 @@ app.use(session(sess))
 app.use(cookieParser())
 
 app.get('/api/getCSRFToken', csrfProtection, (req, res) => {
-  console.log('CSRF TOKEN TEST---------------------->', req)
+  // console.log('CSRF TOKEN TEST---------------------->', req)
   res.json({ CSRFToken: req.csrfToken() })
+})
+
+app.use(function(err, req, res, next) {
+  if (err.code !== 'EBADCSRFTOKEN') return next(err)
+
+  // handle CSRF token errors here
+  res.status(403)
+  res.send('form tampered with')
 })
 
 // mount all routes on /api path
@@ -163,3 +176,4 @@ app.listen(apiPort, () => {
 })
 
 export default app
+export { store }

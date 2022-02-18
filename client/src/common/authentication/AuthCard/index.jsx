@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { formatDistanceToNow } from 'date-fns'
 import {
   Card,
   CardContent,
@@ -8,6 +9,8 @@ import {
   Container,
   Box,
 } from '@material-ui/core'
+import { join, match, replace, test } from 'ramda'
+import useCountDown from 'react-countdown-hook'
 import WarningOutlinedIcon from '@material-ui/icons/WarningOutlined'
 import Alert from '@material-ui/lab/Alert'
 import { makeStyles } from '@material-ui/core/styles'
@@ -23,9 +26,29 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
+const CountDownTimer = ({ message }) => {
+  const initialTime = parseInt(join('', match(/[0-9]/g, message)))
+
+  const [timeLeft, { start, pause, resume, reset }] = useCountDown(
+    initialTime * 1000,
+    1000
+  )
+
+  useEffect(() => {
+    start()
+  }, [])
+
+  return replace(
+    initialTime,
+    formatDistanceToNow(new Date(Date.now() + timeLeft)),
+    message
+  )
+}
+
 export default function AuthCard({ children, logo, cardHeading }) {
   const classes = useStyles()
-  const { loginStatus, signUpStatus } = useAuth()
+  const { loginStatus, loginStatusMessage, signUpStatus } = useAuth()
+  const hasCountdownTimer = test(/[0-9]/g, loginStatusMessage)
 
   return (
     <Container className={classes.container} maxWidth="xs">
@@ -44,9 +67,13 @@ export default function AuthCard({ children, logo, cardHeading }) {
                 variant="outlined"
                 severity="error"
               >
-                <Box
-                  fontSize={13}
-                >{`Some of your info isn't correct. Please try again.`}</Box>
+                <Box fontSize={13}>
+                  {hasCountdownTimer ? (
+                    <CountDownTimer message={loginStatusMessage} />
+                  ) : (
+                    loginStatusMessage
+                  )}
+                </Box>
               </Alert>
             </Box>
           ) : null}

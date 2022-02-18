@@ -11,17 +11,17 @@ const defaultCookie = {
 // Hook
 export function useCookie() {
   const removeCookie = useCallback(() => {
-    Cookies.remove('session')
-    Cookies.set('session', defaultCookie)
+    Cookies.remove('sessionUser')
+    Cookies.set('sessionUser', defaultCookie)
   }, [])
 
   const setSessionCookie = useCallback((session) => {
-    Cookies.remove('session')
-    Cookies.set('session', session)
+    Cookies.remove('sessionUser')
+    Cookies.set('sessionUser', session)
   }, [])
 
   const getSessionCookie = useCallback(() => {
-    const sessionCookie = Cookies.get('session')
+    const sessionCookie = Cookies.get('sessionUser')
 
     if (sessionCookie === undefined) {
       return defaultCookie
