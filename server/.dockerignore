@@ -8,6 +8,8 @@
 **/.toolstarget
 **/.vs
 **/.vscode
+**/.npmrc
+**/.editorconfig
 **/*.*proj.user
 **/*.dbmdl
 **/*.jfm
