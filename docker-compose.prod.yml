@@ -20,5 +20,6 @@ services:
       dockerfile: Dockerfile
     container_name: frontend_prod
     environment:
+      - GENERATE_SOURCEMAP=false
       - CHOKIDAR_USEPOLLING=true
       - NODE_ENV=production

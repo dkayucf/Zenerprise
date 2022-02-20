@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from 'react'
-import { TextField } from '@material-ui/core'
+import { TextField } from '@mui/material'
 import { useFormikContext } from 'formik'
-import Autocomplete from '@material-ui/lab/Autocomplete'
-import { makeStyles } from '@material-ui/core/styles'
+import Autocomplete from '@mui/material/Autocomplete'
+import makeStyles from '@mui/styles/makeStyles'
 import { useIsFocusVisible } from '../../../hooks'
 import StatesInputPaper from './StatesInputPaper'
 import { filter, includes, whereAny, toLower } from 'ramda'
@@ -105,7 +105,7 @@ export default function StateSelect() {
       }}
       autoHighlight
       getOptionLabel={(option) => option.label}
-      getOptionSelected={(option, { value }) => option.value === value}
+      isOptionEqualToValue={(option, { value }) => option.value === value}
       renderOption={(option) => (
         <React.Fragment>
           {toTitleCase(option.label)} ({option.value})

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useState, useCallback } from 'react'
 import { indexBy, prop, map } from 'ramda'
-import { Box, Divider } from '@material-ui/core'
+import { Box, Divider } from '@mui/material'
 
 import SubMenu from './SubMenu'
 import MenuItemLink from './MenuItemLink'

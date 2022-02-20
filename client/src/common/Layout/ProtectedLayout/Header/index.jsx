@@ -1,5 +1,6 @@
 import React from 'react'
-import { alpha, makeStyles } from '@material-ui/core/styles'
+import { alpha } from '@mui/material/styles'
+import makeStyles from '@mui/styles/makeStyles'
 import {
   Avatar,
   AppBar,
@@ -8,10 +9,10 @@ import {
   Typography,
   InputBase,
   Box,
-} from '@material-ui/core'
-import MenuIcon from '@material-ui/icons/Menu'
-import SearchIcon from '@material-ui/icons/Search'
-import MoreIcon from '@material-ui/icons/MoreVert'
+} from '@mui/material'
+import MenuIcon from '@mui/icons-material/Menu'
+import SearchIcon from '@mui/icons-material/Search'
+import MoreIcon from '@mui/icons-material/MoreVert'
 import { useHeader } from '../../../../contexts/header'
 import { useAuth } from '../../../../contexts/auth'
 import SecondaryMenu from './SecondaryMenu'
@@ -70,7 +71,7 @@ const useStyles = makeStyles((theme) => ({
   inputInput: {
     padding: theme.spacing(1, 1, 1, 0),
     // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     transition: theme.transitions.create('width'),
     width: '100%',
     [theme.breakpoints.up('md')]: {
@@ -106,6 +107,7 @@ const Header = () => {
             color="inherit"
             aria-label="open drawer"
             onClick={handleDrawerToggle}
+            size="large"
           >
             <MenuIcon />
           </IconButton>
@@ -135,6 +137,7 @@ const Header = () => {
               onClick={handleProfileMenuOpen}
               onMouseOver={handleProfileMenuOpen}
               color="inherit"
+              size="large"
             >
               <Avatar className={classes.avatar}>
                 {profile?.name?.initials}
@@ -148,6 +151,7 @@ const Header = () => {
               aria-haspopup="true"
               onClick={handleProfileMenuOpen}
               color="inherit"
+              size="large"
             >
               <MoreIcon />
             </IconButton>

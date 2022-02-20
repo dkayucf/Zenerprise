@@ -1,7 +1,7 @@
 import React, { useContext, createContext, useState, useMemo, useCallback } from "react"
 import PropTypes from 'prop-types'
-import { useTheme } from '@material-ui/core/styles'
-import { useMediaQuery } from '@material-ui/core'
+import { useTheme } from '@mui/material/styles'
+import { useMediaQuery } from '@mui/material'
 
 const headerContext = createContext({
     shiftContent: false,

@@ -1,8 +1,9 @@
 import React from 'react'
 import clsx from 'clsx'
 import PropTypes from 'prop-types'
-import { Container } from '@material-ui/core'
-import { makeStyles, createStyles } from '@material-ui/core/styles'
+import { Container } from '@mui/material'
+import makeStyles from '@mui/styles/makeStyles'
+import createStyles from '@mui/styles/createStyles'
 import { useHeader } from '../../../../contexts/header'
 
 const useStyles = makeStyles((theme) =>
@@ -12,7 +13,7 @@ const useStyles = makeStyles((theme) =>
       padding: theme.spacing(3),
       marginTop: component === 'main' ? theme.spacing(8) : null,
       marginLeft: drawerVariant === 'permanent' ? theme.spacing(8) : 0,
-      [theme.breakpoints.down('xs')]: {
+      [theme.breakpoints.down('sm')]: {
         padding: theme.spacing(3, 0),
       },
     }),
@@ -23,7 +24,7 @@ const useStyles = makeStyles((theme) =>
       }),
       width:
         drawerVariant === 'permanent'
-          ? `calc(100% - ${theme.spacing(8)}px)`
+          ? `calc(100% - ${theme.spacing(8)})`
           : '100%',
     }),
     contentShift: ({ drawerWidth }) => ({

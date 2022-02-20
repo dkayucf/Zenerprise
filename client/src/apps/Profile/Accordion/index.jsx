@@ -1,6 +1,6 @@
 import React from 'react'
 import { FieldArray } from 'formik'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import PropTypes from 'prop-types'
 import {
   Typography,
@@ -10,8 +10,9 @@ import {
   Divider,
   Box,
   Button,
-} from '@material-ui/core'
-import ChevronRightIcon from '@material-ui/icons/ChevronRight'
+} from '@mui/material'
+import { styled as muiStyled } from '@mui/system'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import GenericForm from '../../../common/FormComponents/GenericForm'
 import { countries } from '../../../common/FormComponents/CountryInput/'
 import { useAuth } from '../../../contexts/auth'
@@ -23,21 +24,6 @@ import {
   passwordValidationSchema,
   nameValidationSchema,
 } from '../ValidationSchemas'
-
-const Accordion = styled(MuiAccordion)`
-  ${({ theme, $lastAccordion }) => `
-    && {
-      width: 100%;
-      box-shadow: none;
-      border: 1px solid ${theme.palette.divider};
-      border-left: 0;
-      border-right: 0;
-      border-bottom: ${
-        $lastAccordion ? `1px solid ${theme.palette.divider}` : 0
-      };
-    }
-  `}
-`
 
 const AccordionDetails = styled(MuiAccordionDetails)`
   align-items: center;
@@ -51,8 +37,7 @@ const AccordionSummary = styled(MuiAccordionSummary)`
     min-height: 64px;
   }
   .MuiAccordionSummary-content {
-    align-items: center;
-    &.Mui-expanded {
+    align-items: center &.Mui-expanded {
       margin: 12px 0;
     }
   }
@@ -79,6 +64,19 @@ const getValidationSchema = (label, validateEmail) => {
       break
   }
 }
+
+const Accordion = muiStyled(MuiAccordion, {
+  // Configure which props should be forwarded on DOM
+  shouldForwardProp: (prop) => prop !== '$lastAccordion',
+  slot: 'Root',
+})(({ theme, $lastAccordion }) => ({
+  width: '100%',
+  boxShadow: 'none',
+  border: `1px solid ${theme.palette.divider}`,
+  borderLeft: 0,
+  borderRight: 0,
+  borderBottom: $lastAccordion ? `1px solid ${theme.palette.divider}` : 0,
+}))
 
 export default function AccordionForm({
   children,

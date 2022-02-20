@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Box, Typography } from '@material-ui/core'
+import { Box, Typography } from '@mui/material'
 import { useAuth } from '../../../contexts/auth'
 import { useProfileInfo } from '../../../contexts/profile'
 import Accordion from '../Accordion'

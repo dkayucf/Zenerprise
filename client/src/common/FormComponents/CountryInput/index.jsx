@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from 'react'
 import { useFormikContext } from 'formik'
-import { TextField } from '@material-ui/core/'
-import Autocomplete from '@material-ui/lab/Autocomplete'
-import { makeStyles } from '@material-ui/core/styles'
+import { TextField } from '@mui/material/'
+import Autocomplete from '@mui/material/Autocomplete'
+import makeStyles from '@mui/styles/makeStyles'
 import { useIsFocusVisible } from '../../../hooks/'
 import CountryInputPaper from './CountryInputPaper'
 import { filter, includes, whereAny, toLower } from 'ramda'
@@ -102,7 +102,7 @@ export default function CountrySelect() {
       freeSolo
       autoSelect={autoSelect}
       getOptionLabel={(option) => option.label}
-      getOptionSelected={(option, value) => option.code === value.code}
+      isOptionEqualToValue={(option, value) => option.code === value.code}
       onChange={onChange}
       selectOnFocus
       onBlur={onBlur}
@@ -117,7 +117,7 @@ export default function CountrySelect() {
       renderOption={(option) =>
         option.code ? (
           <>
-            <span>{countryToFlag(option.code)}&nbsp;</span>
+            <span>{countryToFlag(option.code)}&nbsp</span>
             {option.label}
           </>
         ) : (

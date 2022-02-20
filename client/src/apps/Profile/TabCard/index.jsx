@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import { makeStyles } from '@material-ui/core/styles'
+import makeStyles from '@mui/styles/makeStyles'
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   Divider,
   useTheme,
   useMediaQuery,
-} from '@material-ui/core/'
+} from '@mui/material/'
 import ProfileInfoProvider from '../../../contexts/profile'
 import BasicInfo from '../BasicInfo'
 import ContactInfo from '../ContactInfo'
@@ -70,8 +70,8 @@ function a11yProps(index) {
 
 export default function TabCard() {
   const theme = useTheme()
-  const isSmall = useMediaQuery(theme.breakpoints.down('sm'))
-  const isXSmall = useMediaQuery(theme.breakpoints.down('xs'))
+  const isSmall = useMediaQuery(theme.breakpoints.down('md'))
+  const isXSmall = useMediaQuery(theme.breakpoints.down('sm'))
   const classes = useStyles({ isSmall, isXSmall })
   const [value, setValue] = useState(0)
 

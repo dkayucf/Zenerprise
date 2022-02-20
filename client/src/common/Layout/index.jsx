@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { CssBaseline } from '@material-ui/core'
+import { CssBaseline } from '@mui/material'
 
 import ProtectedLayout from './ProtectedLayout'
 import PublicLayout from './PublicLayout'

@@ -1,8 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Header from './Header'
-import { Box, Container } from '@material-ui/core'
-import { makeStyles, createStyles } from '@material-ui/core/styles'
+import { Box, Container } from '@mui/material'
+import makeStyles from '@mui/styles/makeStyles'
+import createStyles from '@mui/styles/createStyles'
 import Footer from '../Shared/Footer'
 
 const useStyles = makeStyles((theme) =>

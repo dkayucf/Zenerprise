@@ -27,10 +27,9 @@ services:
         NODE_ENV: development
       dockerfile: Dockerfile.dev
     container_name: frontend_dev
+    env_file:
+      - ./client/dev.env
     volumes:
       - /app/node_modules
       - ./client:/app
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-      - NODE_ENV=development
-      - WDS_SOCKET_PORT=0
+

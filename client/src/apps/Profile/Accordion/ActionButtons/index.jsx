@@ -5,7 +5,7 @@ import {
   AccordionActions as MuiAccordionAction,
   Button,
   Box,
-} from '@material-ui/core'
+} from '@mui/material'
 import LoadingButton from '../../../../common/LoadingButton'
 
 export default function AccordionActions({

@@ -1,7 +1,7 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import makeStyles from '@mui/styles/makeStyles'
 import { ButtonRouter } from '../../../RouterLink'
-import { AppBar, Toolbar, Box } from '@material-ui/core'
+import { AppBar, Toolbar, Box } from '@mui/material'
 
 const useStyles = makeStyles((theme) => ({
   root: {

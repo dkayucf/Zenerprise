@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useFormikContext } from 'formik'
 import yup from '../helpers/yupMethods'
-import styled from 'styled-components'
+import styled from '@emotion/styled'
 import {
   InputAdornment,
   IconButton,
@@ -14,9 +14,9 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-} from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
-import { Visibility, VisibilityOff, HelpOutline } from '@material-ui/icons'
+} from '@mui/material'
+import makeStyles from '@mui/styles/makeStyles'
+import { Visibility, VisibilityOff, HelpOutline } from '@mui/icons-material'
 
 const passwordSchema = yup.object({
   password: yup
@@ -204,6 +204,7 @@ export default function Password({
               aria-label="toggle password visibility"
               onClick={handleShowPassword}
               edge="end"
+              size="large"
             >
               {showPassword ? <Visibility /> : <VisibilityOff />}
             </IconButton>

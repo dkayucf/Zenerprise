@@ -3,8 +3,10 @@ import React, { forwardRef, cloneElement } from 'react'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
 import { NavLink } from 'react-router-dom'
-import { MenuItem, ListItemIcon, Typography } from '@material-ui/core/'
-import { makeStyles, lighten } from '@material-ui/core/styles'
+import { MenuItem, ListItemIcon, Typography } from '@mui/material/'
+import { lighten } from '@mui/material/styles'
+
+import makeStyles from '@mui/styles/makeStyles'
 
 const NavLinkRef = forwardRef((props, ref) => (
   <NavLink innerRef={ref} {...props} />

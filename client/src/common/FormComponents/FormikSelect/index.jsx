@@ -6,7 +6,7 @@ import {
   InputLabel,
   Select,
   FormHelperText,
-} from '@material-ui/core'
+} from '@mui/material'
 import { omit, equals } from 'ramda'
 
 function shouldUpdate(nextProps, currentProps) {

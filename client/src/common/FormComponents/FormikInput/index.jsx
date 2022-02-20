@@ -7,7 +7,7 @@ import {
   FormControl,
   InputLabel,
   FormHelperText,
-} from '@material-ui/core'
+} from '@mui/material'
 import { split, path, pathOr } from 'ramda'
 
 export default function FormikInput({

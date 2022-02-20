@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { makeStyles } from '@material-ui/core/styles'
+import makeStyles from '@mui/styles/makeStyles'
 import { useFormikContext } from 'formik'
 import UserInput from '../../FormComponents/UserInput'
 import Password from '../../FormComponents/Password'
 import LoadingButton from '../../LoadingButton'
 import { LinkRouter } from '../../RouterLink'
 import { useAuth } from '../../../contexts/auth'
-import { Box } from '@material-ui/core'
+import { Box } from '@mui/material'
 import { isEmpty } from 'ramda'
 
 const useStyles = makeStyles((theme) => ({

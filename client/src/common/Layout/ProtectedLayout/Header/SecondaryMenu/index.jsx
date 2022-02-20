@@ -7,8 +7,9 @@ import {
   ListItemIcon,
   Box,
   Divider,
-} from '@material-ui/core'
-import { withStyles, makeStyles } from '@material-ui/core/styles'
+} from '@mui/material'
+import withStyles from '@mui/styles/withStyles'
+import makeStyles from '@mui/styles/makeStyles'
 import { useHeader } from '../../../../../contexts/header'
 import { useAuth } from '../../../../../contexts/auth'
 import { useRouter } from '../../../../../hooks/useRouter'
@@ -30,7 +31,6 @@ const StyledMenu = withStyles(({ spacing }) => ({
 }))((props) => (
   <Menu
     elevation={0}
-    getContentAnchorEl={null}
     anchorOrigin={{
       vertical: 'bottom',
       horizontal: 'right',

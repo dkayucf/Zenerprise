@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import * as React from 'react'
-import { SvgIcon } from '@material-ui/core'
-import { withStyles } from '@material-ui/core/styles'
+import { SvgIcon } from '@mui/material'
+import withStyles from '@mui/styles/withStyles'
 import WarehouseIcon from '../../assets/icons/warehouse.svg'
 import BarcodeScanner from '../../assets/icons/barcodeScanner.svg'
 import InventoryReports from '../../assets/icons/inventoryReports.svg'

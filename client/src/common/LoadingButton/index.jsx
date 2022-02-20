@@ -1,10 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import CircularProgress from '@material-ui/core/CircularProgress'
-import Button from '@material-ui/core/Button'
-import Box from '@material-ui/core/Box'
-import styled from 'styled-components'
+import CircularProgress from '@mui/material/CircularProgress'
+import Button from '@mui/material/Button'
+import Box from '@mui/material/Box'
+import styled from '@emotion/styled'
 
 const StyledCircularProgress = styled(CircularProgress)`
   position: absolute;

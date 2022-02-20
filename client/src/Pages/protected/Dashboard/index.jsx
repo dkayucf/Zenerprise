@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography } from '@material-ui/core'
+import { Typography } from '@mui/material'
 
 const Dashboard = () => {
   return <Typography>This is the dashboard</Typography>

@@ -3,9 +3,9 @@ import PropTypes from 'prop-types'
 import PhoneInput from 'react-phone-input-2'
 import 'react-phone-input-2/lib/material.css'
 import { useField, useFormikContext } from 'formik'
-import { Box, FormHelperText } from '@material-ui/core'
+import { Box, FormHelperText } from '@mui/material'
 
-import { makeStyles } from '@material-ui/core/styles'
+import makeStyles from '@mui/styles/makeStyles'
 
 const useStyles = makeStyles((theme) => ({
   phoneInput: ({ error, touched }) => ({

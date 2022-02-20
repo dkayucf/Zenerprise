@@ -8,12 +8,12 @@ import {
   Typography,
   Container,
   Box,
-} from '@material-ui/core'
+} from '@mui/material'
 import { join, match, replace, test } from 'ramda'
 import useCountDown from 'react-countdown-hook'
-import WarningOutlinedIcon from '@material-ui/icons/WarningOutlined'
-import Alert from '@material-ui/lab/Alert'
-import { makeStyles } from '@material-ui/core/styles'
+import WarningOutlinedIcon from '@mui/icons-material/WarningOutlined'
+import Alert from '@mui/material/Alert'
+import makeStyles from '@mui/styles/makeStyles'
 import { useAuth } from '../../../contexts/auth'
 
 const useStyles = makeStyles((theme) => ({

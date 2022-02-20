@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
-import { Drawer, Toolbar, Box } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
+import { Drawer, Toolbar, Box } from '@mui/material'
+import makeStyles from '@mui/styles/makeStyles'
 import { useHeader } from '../../../../contexts/header'
 import Menus from '../Menus'
 
@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.leavingScreen,
     }),
     overflowX: 'hidden',
-    width: theme.spacing(7) + 1,
+    width: theme.spacing(7),
   },
   content: {
     flexGrow: 1,

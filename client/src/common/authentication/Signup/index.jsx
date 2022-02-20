@@ -1,7 +1,7 @@
 import React from 'react'
 import { Formik } from 'formik'
 import yup from '../../FormComponents/helpers/yupMethods'
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined'
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import AuthCard from '../AuthCard'
 import SignUpForm from './Form'
 

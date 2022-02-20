@@ -1,12 +1,12 @@
 import * as React from 'react'
 import PropTypes from 'prop-types'
-import ExpandMore from '@material-ui/icons/ExpandMore'
-import List from '@material-ui/core/List'
-import MenuItem from '@material-ui/core/MenuItem'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import Typography from '@material-ui/core/Typography'
-import Collapse from '@material-ui/core/Collapse'
-import { makeStyles } from '@material-ui/core/styles'
+import ExpandMore from '@mui/icons-material/ExpandMore'
+import List from '@mui/material/List'
+import MenuItem from '@mui/material/MenuItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import Typography from '@mui/material/Typography'
+import Collapse from '@mui/material/Collapse'
+import makeStyles from '@mui/styles/makeStyles'
 
 const useStyles = makeStyles((theme) => ({
   icon: { minWidth: theme.spacing(5) },
@@ -35,7 +35,7 @@ const SubMenu = ({
 
   return (
     <>
-      <MenuItem dense={dense} button onClick={handleToggle}>
+      <MenuItem dense={dense} component="button" onClick={handleToggle}>
         <ListItemIcon className={classes.icon}>
           {isOpen ? <ExpandMore /> : icon}
         </ListItemIcon>

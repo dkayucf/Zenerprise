@@ -49,8 +49,8 @@ function focusTriggersKeyboardModality(node) {
 
 /**
  * Keep track of our keyboard modality state with `hadKeyboardEvent`.
- * If the most recent user interaction was via the keyboard;
- * and the key press did not include a meta, alt/option, or control key;
+ * If the most recent user interaction was via the keyboard
+ * and the key press did not include a meta, alt/option, or control key
  * then the modality is keyboard. Otherwise, the modality is not keyboard.
  * @param {KeyboardEvent} event
  */

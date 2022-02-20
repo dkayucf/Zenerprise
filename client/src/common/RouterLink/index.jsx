@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Link as RouterLink } from 'react-router-dom'
-import { Link, Button } from '@material-ui/core/'
+import { Link, Button } from '@mui/material/'
 
 function LinkRouter({ to, children, ...rest }) {
   return (

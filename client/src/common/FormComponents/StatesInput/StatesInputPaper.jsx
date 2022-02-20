@@ -2,7 +2,7 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { useEffect, useRef } from 'react'
-import Paper from '@material-ui/core/Paper'
+import Paper from '@mui/material/Paper'
 
 const StatesInputPaper =
   (setAutoSelect) =>
