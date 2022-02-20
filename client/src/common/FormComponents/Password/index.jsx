@@ -181,7 +181,7 @@ export default function Password({
       variant="outlined"
       error={passwordError && touchedInput}
       fullWidth
-      margin={isLogin ? 'normal' : 'dense'}
+      margin="normal"
     >
       <InputLabel className={classes.label} htmlFor={name} required>
         {label}

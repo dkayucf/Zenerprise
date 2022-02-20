@@ -29,10 +29,7 @@ const useStyles = makeStyles((theme) => ({
 const CountDownTimer = ({ message }) => {
   const initialTime = parseInt(join('', match(/[0-9]/g, message)))
 
-  const [timeLeft, { start, pause, resume, reset }] = useCountDown(
-    initialTime * 1000,
-    1000
-  )
+  const [timeLeft, { start }] = useCountDown(initialTime * 1000, 1000)
 
   useEffect(() => {
     start()

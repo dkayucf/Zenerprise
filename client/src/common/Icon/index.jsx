@@ -23,7 +23,7 @@ const StyledSvgIcon = withStyles({
     height: '1.20em',
   },
 })(SvgIcon)
-
+//TODO: FIX ICONS
 const Icon = ({ icon }) => {
   switch (icon) {
     case 'inventory':

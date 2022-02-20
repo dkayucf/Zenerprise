@@ -5,7 +5,7 @@ import { Box, Divider } from '@material-ui/core'
 
 import SubMenu from './SubMenu'
 import MenuItemLink from './MenuItemLink'
-import Icon from '../../../Icon/index'
+// import Icon from '../../../Icon/index'
 import { useHeader } from '../../../../contexts/header'
 import { useAuth } from '../../../../contexts/auth'
 
@@ -36,7 +36,7 @@ const Menu = () => {
               isOpen={state[menu.id]}
               sidebarIsOpen={open}
               name={menu.name}
-              icon={<Icon icon={menu.icon} />}
+              // icon={<Icon icon={menu.icon} />}
             >
               {menu.routes && menu.routes.length > 0
                 ? menu.routes.map((subMenu, index) => (
@@ -44,7 +44,7 @@ const Menu = () => {
                       key={index}
                       to={'/auth' + subMenu.path}
                       primaryText={subMenu.name}
-                      leftIcon={<Icon icon={subMenu.icon} />}
+                      // leftIcon={<Icon icon={subMenu.icon} />}
                     />
                   ))
                 : null}
