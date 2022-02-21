@@ -15,7 +15,7 @@ const NavLinkRef = forwardRef((props, ref) => (
 const useStyles = makeStyles(
   (theme) => ({
     root: ({ sidebarIsOpen }) => ({
-      color: theme.palette.text.secondary,
+      // color: theme.palette.text.secondary,
       paddingLeft: sidebarIsOpen ? 40 : 12,
       borderLeft: '3px solid transparent',
     }),

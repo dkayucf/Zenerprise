@@ -9,7 +9,13 @@ import Collapse from '@mui/material/Collapse'
 import makeStyles from '@mui/styles/makeStyles'
 
 const useStyles = makeStyles((theme) => ({
-  icon: { minWidth: theme.spacing(5) },
+  MuiMenuItemRoot: {
+    width: '100%',
+    height: '100%',
+    paddingTop: '14px',
+    paddingBottom: '14px',
+  },
+  icon: { minWidth: theme.spacing(5) + '!important' },
   sidebarIsOpen: {
     '& a': {
       transition: 'padding-left 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms',
@@ -35,7 +41,12 @@ const SubMenu = ({
 
   return (
     <>
-      <MenuItem dense={dense} component="button" onClick={handleToggle}>
+      <MenuItem
+        dense={dense}
+        className={classes.MuiMenuItemRoot}
+        component="button"
+        onClick={handleToggle}
+      >
         <ListItemIcon className={classes.icon}>
           {isOpen ? <ExpandMore /> : icon}
         </ListItemIcon>

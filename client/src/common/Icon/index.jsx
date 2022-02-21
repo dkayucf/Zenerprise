@@ -2,20 +2,20 @@
 import * as React from 'react'
 import { SvgIcon } from '@mui/material'
 import withStyles from '@mui/styles/withStyles'
-import WarehouseIcon from '../../assets/icons/warehouse.svg'
-import BarcodeScanner from '../../assets/icons/barcodeScanner.svg'
-import InventoryReports from '../../assets/icons/inventoryReports.svg'
-import InventoryList from '../../assets/icons/inventoryList.svg'
-import OrderGuide from '../../assets/icons/orderGuide.svg'
-import Inventory from '../../assets/icons/inventory.svg'
-import Recipe from '../../assets/icons/recipe.svg'
-import Ingredients from '../../assets/icons/ingredient.svg'
-import RecipeBuilder from '../../assets/icons/recipeBuilder.svg'
-import Recipes from '../../assets/icons/recipes.svg'
-import Menu from '../../assets/icons/menu.svg'
-import MenuBuilder from '../../assets/icons/menuBuilder.svg'
-import Sales from '../../assets/icons/sales.svg'
-import SalesReports from '../../assets/icons/salesReports.svg'
+import { ReactComponent as WarehouseIcon } from '../../assets/icons/warehouse.svg'
+import { ReactComponent as BarcodeScanner } from '../../assets/icons/barcodeScanner.svg'
+import { ReactComponent as InventoryReports } from '../../assets/icons/inventoryReports.svg'
+import { ReactComponent as InventoryList } from '../../assets/icons/inventoryList.svg'
+import { ReactComponent as OrderGuide } from '../../assets/icons/orderGuide.svg'
+import { ReactComponent as Inventory } from '../../assets/icons/inventory.svg'
+import { ReactComponent as Recipe } from '../../assets/icons/recipe.svg'
+import { ReactComponent as Ingredients } from '../../assets/icons/ingredient.svg'
+import { ReactComponent as RecipeBuilder } from '../../assets/icons/recipeBuilder.svg'
+import { ReactComponent as Recipes } from '../../assets/icons/recipes.svg'
+import { ReactComponent as Menu } from '../../assets/icons/menu.svg'
+import { ReactComponent as MenuBuilder } from '../../assets/icons/menuBuilder.svg'
+import { ReactComponent as Sales } from '../../assets/icons/sales.svg'
+import { ReactComponent as SalesReports } from '../../assets/icons/salesReports.svg'
 
 const StyledSvgIcon = withStyles({
   root: {
@@ -23,7 +23,7 @@ const StyledSvgIcon = withStyles({
     height: '1.20em',
   },
 })(SvgIcon)
-//TODO: FIX ICONS
+
 const Icon = ({ icon }) => {
   switch (icon) {
     case 'inventory':
