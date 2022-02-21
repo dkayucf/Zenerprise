@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useCallback,
   useState,
+  forwardRef,
 } from 'react'
 import makeStyles from '@mui/styles/makeStyles'
 import PropTypes from 'prop-types'
@@ -12,7 +13,11 @@ import MuiAlert from '@mui/material/Alert'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 
-const Alert = (props) => <MuiAlert elevation={6} variant="filled" {...props} />
+const Alert = forwardRef((props, ref) => (
+  <MuiAlert elevation={6} variant="filled" {...props} ref={ref} />
+))
+
+Alert.displayName = 'AlertSnackbar'
 
 const snackbarContext = createContext({
   // eslint-disable-next-line no-unused-vars

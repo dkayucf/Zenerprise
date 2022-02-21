@@ -92,8 +92,8 @@ const sess = {
   saveUninitialized: true,
   store: store,
   cookie: {
-    httpOnly: false,
-    secure: false,
+    httpOnly: environment === 'production',
+    secure: environment === 'production',
     expires: false,
     maxAge: 7200000
   },
@@ -103,15 +103,19 @@ const sess = {
 if (environment === 'production') {
   const expiryDate = new Date(Date.now() + 60 * 60 * 1000)
   app.set('trust proxy', 1) // trust first proxy
-  sess.cookie.secure = true // serve secure cookies
-  sess.cookie.httpOnly = true
   sess.cookie.expires = expiryDate
   sess.cookie.path = '/apix/*'
   // sess.cookie.domain = 'zenerprise.com'
 }
 
 const csrfProtection = csrf({
-  cookie: true
+  cookie: {
+    key: 'token',
+    sameSite: 'strict',
+    secure: environment === 'production',
+    httpOnly: environment === 'production',
+    maxAge: 8000
+  }
 })
 
 app.use(session(sess))
